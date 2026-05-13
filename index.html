@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ruby Wall — AI Chatbot Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0e;
+      --surface: rgba(255,255,255,0.02);
+      --border: rgba(255,255,255,0.07);
+      --red: #e11d48;
+      --red-dark: #9f1239;
+      --text: #f0f0f0;
+      --muted: #666;
+      --font: 'DM Sans', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+    /* ── Header ── */
+    #header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    #logo {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: linear-gradient(135deg, var(--red), var(--red-dark));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    #header-title { font-weight: 800; font-size: 15px; }
+    #header-sub { color: #444; font-size: 11px; }
+    #worker-status {
+      margin-left: auto;
+      display: flex; align-items: center; gap: 8px;
+      color: #4ade80; font-size: 12px; font-weight: 600;
+    }
+    .dot-green {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #4ade80; box-shadow: 0 0 6px #4ade80;
+    }
+    #lead-count {
+      display: none;
+      background: rgba(225,29,72,0.12);
+      border: 1px solid rgba(225,29,72,0.3);
+      border-radius: 20px; padding: 4px 14px;
+      color: var(--red); font-size: 13px; font-weight: 700;
+    }
+
+    /* ── Tabs ── */
+    #tabs {
+      display: flex; gap: 4px;
+      padding: 10px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      background: rgba(0,0,0,0.2);
+    }
+    .tab-btn {
+      padding: 8px 18px; border-radius: 8px; border: none;
+      cursor: pointer; font-family: var(--font);
+      font-weight: 700; font-size: 13px;
+      background: transparent; color: #555;
+      transition: all 0.15s;
+    }
+    .tab-btn.active { background: var(--red); color: #fff; }
+
+    /* ── Main ── */
+    #main {
+      flex: 1; padding: 24px;
+      max-width: 1100px; width: 100%; margin: 0 auto;
+    }
+
+    /* ── Panels ── */
+    .panel { display: none; }
+    .panel.active { display: grid; }
+
+    #builder-panel {
+      grid-template-columns: 1fr 340px;
+      gap: 24px;
+      height: calc(100vh - 156px);
+    }
+    #preview-panel {
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      height: calc(100vh - 156px);
+    }
+    #embed-panel {
+      grid-template-columns: 1fr;
+      height: calc(100vh - 156px);
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    /* ── Builder form ── */
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block; color: #888;
+      font-size: 11px; font-weight: 700;
+      margin-bottom: 6px;
+      text-transform: uppercase; letter-spacing: 0.07em;
+    }
+    .field .sub { color: #555; font-size: 12px; margin-bottom: 6px; }
+    .inp {
+      width: 100%; background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; padding: 10px 12px;
+      color: var(--text); font-size: 14px;
+      font-family: var(--font); outline: none;
+    }
+    textarea.inp { resize: vertical; min-height: 80px; }
+    .divider {
+      display: flex; align-items: center; gap: 10px;
+      margin: 24px 0 18px;
+    }
+    .divider span {
+      color: var(--red); font-size: 11px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;
+    }
+    .divider-line { flex: 1; height: 1px; background: rgba(225,29,72,0.15); }
+
+    /* Emoji picker */
+    #emoji-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+    .emoji-btn {
+      width: 40px; height: 40px; border-radius: 8px;
+      font-size: 18px; cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      transition: all 0.15s;
+    }
+    .emoji-btn.selected {
+      border: 2px solid var(--red);
+      background: rgba(225,29,72,0.15);
+    }
+
+    /* Color */
+    #color-row { display: flex; align-items: center; gap: 10px; }
+    #color-picker {
+      width: 48px; height: 40px; border-radius: 8px;
+      border: none; cursor: pointer; padding: 2px;
+      background: rgba(255,255,255,0.05);
+    }
+    #color-hex { width: 110px; }
+
+    /* Tone */
+    #tone-row { display: flex; gap: 6px; }
+    .tone-btn {
+      flex: 1; padding: 8px 0; border-radius: 8px;
+      cursor: pointer; font-size: 12px; font-weight: 700;
+      font-family: var(--font);
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      color: #666; transition: all 0.15s;
+    }
+    .tone-btn.selected { border-width: 2px; }
+
+    /* Toggle */
+    .toggle-row {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;
+    }
+    .toggle-header { display: flex; align-items: center; justify-content: space-between; }
+    .toggle-label { font-size: 14px; font-weight: 600; }
+    .toggle-sub { color: #555; font-size: 12px; }
+    .toggle {
+      width: 44px; height: 24px; border-radius: 12px;
+      cursor: pointer; position: relative;
+      background: rgba(255,255,255,0.1);
+      transition: background 0.2s; flex-shrink: 0; border: none;
+    }
+    .toggle.on { background: var(--red); }
+    .toggle-thumb {
+      position: absolute; top: 3px; left: 3px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: #fff; transition: left 0.2s; pointer-events: none;
+    }
+    .toggle.on .toggle-thumb { left: 23px; }
+    #formspree-row { display: none; margin-top: 14px; }
+
+    /* ── Chat Widget ── */
+    .chat-widget {
+      display: flex; flex-direction: column;
+      height: 100%; border-radius: 16px; overflow: hidden;
+      background: #0f0f13; font-family: var(--font);
+      border: 1px solid rgba(225,29,72,0.2);
+    }
+    .chat-header {
+      padding: 14px 18px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .chat-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .chat-name { color: #fff; font-weight: 700; font-size: 15px; }
+    .chat-status { color: rgba(255,255,255,0.7); font-size: 12px; }
+    .online-dot {
+      margin-left: auto; width: 8px; height: 8px;
+      border-radius: 50%; background: #4ade80;
+      box-shadow: 0 0 8px #4ade80;
+    }
+    .chat-messages {
+      flex: 1; overflow-y: auto; padding: 16px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .msg-row { display: flex; align-items: flex-end; gap: 8px; }
+    .msg-row.user { justify-content: flex-end; }
+    .msg-avatar {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; flex-shrink: 0;
+    }
+    .msg-bubble {
+      max-width: 75%; padding: 10px 14px;
+      font-size: 14px; line-height: 1.55; color: var(--text);
+    }
+    .msg-bubble.bot {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px 18px 18px 4px;
+    }
+    .msg-bubble.user {
+      border-radius: 18px 18px 4px 18px;
+    }
+    .typing-dots {
+      display: flex; gap: 5px; align-items: center;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px 18px 18px 4px;
+    }
+    .typing-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--red); opacity: 0.3;
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
+      30% { transform: translateY(-5px); opacity: 1; }
+    }
+    .lead-card {
+      border-radius: 12px; padding: 14px 16px;
+      display: none;
+    }
+    .lead-card-title { font-weight: 700; font-size: 13px; margin-bottom: 8px; }
+    .lead-card-fields { font-size: 13px; color: #ccc; display: flex; flex-direction: column; gap: 3px; }
+    .lead-email-note { color: #4ade80; font-size: 12px; margin-top: 8px; display: none; }
+    .error-msg {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 10px; padding: 10px 14px;
+      color: #fca5a5; font-size: 12px; display: none;
+    }
+    .chat-input-row {
+      padding: 12px 14px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex; gap: 8px;
+      background: rgba(0,0,0,0.3);
+    }
+    .chat-input {
+      flex: 1; background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 10px 14px;
+      color: var(--text); font-size: 14px;
+      font-family: var(--font); outline: none;
+    }
+    .send-btn {
+      border: none; border-radius: 10px; width: 42px;
+      cursor: pointer; font-size: 17px; color: #fff;
+      transition: background 0.2s; background: var(--red);
+    }
+    .send-btn:disabled { background: rgba(255,255,255,0.08); cursor: not-allowed; }
+
+    /* Builder right col */
+    #builder-right {
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    #widget-preview-wrap { flex: 1; min-height: 0; }
+    #get-embed-btn {
+      background: linear-gradient(135deg, var(--red), var(--red-dark));
+      border: none; border-radius: 10px; padding: 13px 0;
+      color: #fff; font-weight: 700; font-size: 14px;
+      cursor: pointer; font-family: var(--font); width: 100%;
+    }
+
+    /* Preview panel */
+    #preview-left { display: flex; flex-direction: column; gap: 12px; }
+    #preview-right { overflow-y: auto; }
+    .section-title { color: var(--text); font-weight: 700; font-size: 15px; margin-bottom: 0; }
+    #preview-widget-wrap { flex: 1; min-height: 0; }
+    #leads-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+    .lead-item {
+      background: rgba(74,222,128,0.05);
+      border: 1px solid rgba(74,222,128,0.2);
+      border-radius: 10px; padding: 12px 14px;
+    }
+    .lead-item-header {
+      display: flex; justify-content: space-between; margin-bottom: 6px;
+    }
+    .lead-badge { color: #4ade80; font-weight: 700; font-size: 12px; }
+    .lead-time { color: #444; font-size: 12px; }
+    .lead-item-fields { color: #ddd; font-size: 14px; display: flex; flex-direction: column; gap: 2px; }
+    .lead-business { color: #555; font-size: 12px; margin-top: 2px; }
+    #no-leads {
+      color: #333; font-size: 14px;
+      text-align: center; margin-top: 80px; line-height: 1.8;
+    }
+
+    /* Embed panel */
+    #embed-inner {
+      height: 100%; display: flex; flex-direction: column; gap: 16px;
+    }
+    #embed-desc { color: #666; font-size: 13px; line-height: 1.6; }
+    #embed-desc code {
+      color: var(--red); background: rgba(225,29,72,0.1);
+      padding: 1px 6px; border-radius: 4px;
+    }
+    #embed-code-area {
+      flex: 1; min-height: 0;
+      width: 100%; background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px; padding: 16px;
+      color: #7dd3fc; font-size: 12px;
+      font-family: monospace; resize: none; outline: none;
+      line-height: 1.6;
+    }
+    #copy-btn {
+      background: var(--red); border: none; border-radius: 10px;
+      padding: 13px 0; color: #fff; font-weight: 700;
+      font-size: 14px; cursor: pointer;
+      font-family: var(--font); transition: background 0.3s; width: 100%;
+    }
+    #copy-btn.copied { background: #4ade80; }
+    .standalone-info {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px; padding: 14px 16px;
+    }
+    .standalone-info h4 { color: #aaa; font-size: 13px; margin-bottom: 6px; }
+    .standalone-info p { color: #555; font-size: 12px; line-height: 1.7; }
+    .standalone-info span { color: #7dd3fc; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div id="header">
+  <div id="logo">💎</div>
+  <div>
+    <div id="header-title">Ruby Wall</div>
+    <div id="header-sub">AI Chatbot Builder · Pillar 4</div>
+  </div>
+  <div id="worker-status">
+    <div class="dot-green"></div>
+    Worker Connected
+  </div>
+  <div id="lead-count"></div>
+</div>
+
+<!-- Tabs -->
+<div id="tabs">
+  <button class="tab-btn active" data-tab="builder">⚙️ Builder</button>
+  <button class="tab-btn" data-tab="preview">💬 Preview</button>
+  <button class="tab-btn" data-tab="embed">🔗 Embed Code</button>
+</div>
+
+<!-- Main -->
+<div id="main">
+
+  <!-- Builder Panel -->
+  <div id="builder-panel" class="panel active">
+    <!-- Left: Form -->
+    <div class="card">
+      <!-- Appearance -->
+      <div class="divider"><div class="divider-line"></div><span>Appearance</span><div class="divider-line"></div></div>
+
+      <div class="field">
+        <label>Bot Name</label>
+        <input class="inp" id="bot-name" value="Aria" oninput="updateConfig()" />
+      </div>
+
+      <div class="field">
+        <label>Avatar Emoji</label>
+        <div id="emoji-grid">
+          <button class="emoji-btn selected" data-emoji="💬" onclick="selectEmoji(this)">💬</button>
+          <button class="emoji-btn" data-emoji="🤖" onclick="selectEmoji(this)">🤖</button>
+          <button class="emoji-btn" data-emoji="⭐" onclick="selectEmoji(this)">⭐</button>
+          <button class="emoji-btn" data-emoji="🔥" onclick="selectEmoji(this)">🔥</button>
+          <button class="emoji-btn" data-emoji="✨" onclick="selectEmoji(this)">✨</button>
+          <button class="emoji-btn" data-emoji="💡" onclick="selectEmoji(this)">💡</button>
+          <button class="emoji-btn" data-emoji="🏪" onclick="selectEmoji(this)">🏪</button>
+          <button class="emoji-btn" data-emoji="👋" onclick="selectEmoji(this)">👋</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Brand Color</label>
+        <div id="color-row">
+          <input type="color" id="color-picker" value="#e11d48" oninput="onColorPicker(this.value)" />
+          <input class="inp" id="color-hex" value="#e11d48" oninput="onColorHex(this.value)" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Welcome Message</label>
+        <input class="inp" id="welcome-msg" value="Hey there! 👋 How can I help you today?" oninput="updateConfig()" />
+      </div>
+
+      <!-- Business Info -->
+      <div class="divider"><div class="divider-line"></div><span>Business Info</span><div class="divider-line"></div></div>
+
+      <div class="field">
+        <label>Business Name</label>
+        <input class="inp" id="biz-name" placeholder="e.g. Mike's Auto Repair" oninput="updateConfig()" />
+      </div>
+
+      <div class="field">
+        <label>Business Hours</label>
+        <input class="inp" id="biz-hours" placeholder="e.g. Mon–Sat 9am–6pm, Closed Sunday" oninput="updateConfig()" />
+      </div>
+
+      <div class="field">
+        <label>Services Offered</label>
+        <textarea class="inp" id="biz-services" placeholder="List services, one per line or comma-separated" oninput="updateConfig()"></textarea>
+      </div>
+
+      <div class="field">
+        <label>FAQs <span style="text-transform:none;font-weight:400;color:#555">(optional)</span></label>
+        <div class="sub">Common Q&As the bot should know</div>
+        <textarea class="inp" id="biz-faqs" placeholder="Q: Do you offer free estimates? A: Yes, always free." oninput="updateConfig()"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Bot Tone</label>
+        <div id="tone-row">
+          <button class="tone-btn selected" data-tone="friendly" onclick="selectTone(this)">Friendly</button>
+          <button class="tone-btn" data-tone="professional" onclick="selectTone(this)">Professional</button>
+          <button class="tone-btn" data-tone="casual" onclick="selectTone(this)">Casual</button>
+          <button class="tone-btn" data-tone="enthusiastic" onclick="selectTone(this)">Enthusiastic</button>
+        </div>
+      </div>
+
+      <!-- Lead Settings -->
+      <div class="divider"><div class="divider-line"></div><span>Lead Settings</span><div class="divider-line"></div></div>
+
+      <div class="toggle-row">
+        <div class="toggle-header">
+          <div>
+            <div class="toggle-label">Email leads to client</div>
+            <div class="toggle-sub">Via Formspree (free)</div>
+          </div>
+          <button class="toggle" id="email-toggle" onclick="toggleEmail()">
+            <div class="toggle-thumb"></div>
+          </button>
+        </div>
+        <div id="formspree-row">
+          <label style="color:#777;font-size:12px;display:block;margin-bottom:6px">Formspree Form ID</label>
+          <input class="inp" id="formspree-id" placeholder="e.g. xrgvkpqw" oninput="updateConfig()" />
+          <div style="color:#444;font-size:11px;margin-top:4px">Get a free ID at formspree.io</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Widget + button -->
+    <div id="builder-right">
+      <div id="widget-preview-wrap">
+        <div class="chat-widget" id="builder-widget">
+          <div class="chat-header" id="builder-header" style="background:linear-gradient(135deg,#e11d48dd,#e11d4899)">
+            <div class="chat-avatar" id="builder-avatar">💬</div>
+            <div>
+              <div class="chat-name" id="builder-bot-name">Aria</div>
+              <div class="chat-status" id="builder-biz-label">AI Assistant · Online</div>
+            </div>
+            <div class="online-dot"></div>
+          </div>
+          <div class="chat-messages" id="builder-messages"></div>
+          <div class="lead-card" id="builder-lead-card"></div>
+          <div class="error-msg" id="builder-error"></div>
+          <div class="chat-input-row">
+            <input class="chat-input" id="builder-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMsg('builder')" />
+            <button class="send-btn" id="builder-send" onclick="sendMsg('builder')">➤</button>
+          </div>
+        </div>
+      </div>
+      <button id="get-embed-btn" onclick="switchTab('embed')">Get Embed Code →</button>
+    </div>
+  </div>
+
+  <!-- Preview Panel -->
+  <div id="preview-panel" class="panel">
+    <div id="preview-left">
+      <div class="section-title">Live Preview</div>
+      <div id="preview-widget-wrap">
+        <div class="chat-widget" id="preview-widget">
+          <div class="chat-header" id="preview-header" style="background:linear-gradient(135deg,#e11d48dd,#e11d4899)">
+            <div class="chat-avatar" id="preview-avatar">💬</div>
+            <div>
+              <div class="chat-name" id="preview-bot-name">Aria</div>
+              <div class="chat-status" id="preview-biz-label">AI Assistant · Online</div>
+            </div>
+            <div class="online-dot"></div>
+          </div>
+          <div class="chat-messages" id="preview-messages"></div>
+          <div class="lead-card" id="preview-lead-card"></div>
+          <div class="error-msg" id="preview-error"></div>
+          <div class="chat-input-row">
+            <input class="chat-input" id="preview-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMsg('preview')" />
+            <button class="send-btn" id="preview-send" onclick="sendMsg('preview')">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="preview-right" class="card">
+      <div class="section-title">Captured Leads</div>
+      <div id="no-leads">No leads yet.<br>Chat with the bot to capture one.</div>
+      <div id="leads-list"></div>
+    </div>
+  </div>
+
+  <!-- Embed Panel -->
+  <div id="embed-panel" class="panel">
+    <div class="card">
+      <div id="embed-inner">
+        <div style="color:var(--text);font-size:16px;font-weight:700">Embed Code</div>
+        <div id="embed-desc">
+          Paste this snippet before the <code>&lt;/body&gt;</code> tag of your client's site.
+          The chat bubble appears automatically in the bottom-right corner.
+        </div>
+        <textarea id="embed-code-area" readonly></textarea>
+        <button id="copy-btn" onclick="copyEmbed()">Copy Embed Code</button>
+        <div class="standalone-info">
+          <h4>Standalone Page (GitHub Pages)</h4>
+          <p>New repo → paste wrapper HTML with embed code → enable Pages.<br>
+          <span>github.com/gideonmoffitt08-coder/[clientname]-chat</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const PROXY = 'https://ruby-wall-chatbot.gideonmoffitt08.workers.dev';
+
+// ── Config State ──────────────────────────────────────────────────────
+let config = {
+  botName: 'Aria',
+  avatarEmoji: '💬',
+  primaryColor: '#e11d48',
+  welcomeMessage: 'Hey there! 👋 How can I help you today?',
+  businessName: '',
+  businessHours: '',
+  services: '',
+  faqs: '',
+  tone: 'friendly',
+  emailLeads: false,
+  formspreeId: '',
+};
+
+// Message histories per widget
+const histories = { builder: [], preview: [] };
+const leads = [];
+
+// ── Init ──────────────────────────────────────────────────────────────
+function init() {
+  renderWelcome('builder');
+  renderWelcome('preview');
+  updateWidgetUI();
+}
+
+function renderWelcome(widget) {
+  histories[widget] = [{ role: 'assistant', content: config.welcomeMessage }];
+  renderMessages(widget);
+}
+
+// ── Config Updates ────────────────────────────────────────────────────
+function updateConfig() {
+  config.botName = document.getElementById('bot-name').value;
+  config.welcomeMessage = document.getElementById('welcome-msg').value;
+  config.businessName = document.getElementById('biz-name').value;
+  config.businessHours = document.getElementById('biz-hours').value;
+  config.services = document.getElementById('biz-services').value;
+  config.faqs = document.getElementById('biz-faqs').value;
+  config.formspreeId = document.getElementById('formspree-id').value;
+  updateWidgetUI();
+  generateEmbedCode();
+}
+
+function updateWidgetUI() {
+  const p = config.primaryColor;
+  ['builder', 'preview'].forEach(w => {
+    document.getElementById(`${w}-header`).style.background = `linear-gradient(135deg,${p}ee,${p}99)`;
+    document.getElementById(`${w}-avatar`).style.background = 'rgba(255,255,255,0.2)';
+    document.getElementById(`${w}-avatar`).textContent = config.avatarEmoji;
+    document.getElementById(`${w}-bot-name`).textContent = config.botName;
+    document.getElementById(`${w}-biz-label`).textContent = (config.businessName || 'AI Assistant') + ' · Online';
+
+    const lc = document.getElementById(`${w}-lead-card`);
+    lc.style.background = `linear-gradient(135deg,${p}18,${p}08)`;
+    lc.style.border = `1px solid ${p}44`;
+    const lct = lc.querySelector('.lead-card-title');
+    if (lct) lct.style.color = p;
+
+    document.getElementById(`${w}-send`).style.background = p;
+    const msgs = document.getElementById(`${w}-messages`);
+    msgs.querySelectorAll('.msg-bubble.bot .msg-avatar').forEach(a => a.style.background = `${p}33`);
+    msgs.querySelectorAll('.msg-bubble.user').forEach(b => b.style.background = `linear-gradient(135deg,${p},${p}bb)`);
+    msgs.querySelectorAll('.typing-dot').forEach(d => d.style.background = p);
+  });
+
+  // Update emoji buttons
+  document.querySelectorAll('.emoji-btn').forEach(b => {
+    b.style.border = b.dataset.emoji === config.avatarEmoji
+      ? `2px solid ${p}` : '1px solid rgba(255,255,255,0.1)';
+    b.style.background = b.dataset.emoji === config.avatarEmoji
+      ? `${p}22` : 'rgba(255,255,255,0.04)';
+  });
+
+  // Update tone buttons
+  document.querySelectorAll('.tone-btn').forEach(b => {
+    const sel = b.dataset.tone === config.tone;
+    b.style.border = sel ? `2px solid ${p}` : '1px solid rgba(255,255,255,0.1)';
+    b.style.background = sel ? `${p}22` : 'rgba(255,255,255,0.04)';
+    b.style.color = sel ? p : '#666';
+  });
+}
+
+// ── Emoji / Color / Tone ──────────────────────────────────────────────
+function selectEmoji(btn) {
+  config.avatarEmoji = btn.dataset.emoji;
+  document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  updateConfig();
+}
+
+function onColorPicker(val) {
+  config.primaryColor = val;
+  document.getElementById('color-hex').value = val;
+  updateWidgetUI(); generateEmbedCode();
+}
+
+function onColorHex(val) {
+  if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+    config.primaryColor = val;
+    document.getElementById('color-picker').value = val;
+    updateWidgetUI(); generateEmbedCode();
+  }
+}
+
+function selectTone(btn) {
+  config.tone = btn.dataset.tone;
+  document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  updateConfig();
+}
+
+function toggleEmail() {
+  config.emailLeads = !config.emailLeads;
+  const t = document.getElementById('email-toggle');
+  t.classList.toggle('on', config.emailLeads);
+  document.getElementById('formspree-row').style.display = config.emailLeads ? 'block' : 'none';
+  generateEmbedCode();
+}
+
+// ── System Prompt ─────────────────────────────────────────────────────
+function buildSystemPrompt() {
+  return `You are ${config.botName}, an AI assistant for ${config.businessName || 'this business'}.
+
+Your tone is ${config.tone}. Keep responses concise and helpful (2-4 sentences max).
+
+Business Hours: ${config.businessHours || 'Contact us for hours'}
+Services: ${config.services || 'Please ask about our services'}
+FAQs: ${config.faqs || ''}
+
+Your job is to:
+1. Answer questions about the business warmly and helpfully
+2. Capture leads by asking for their name, phone number, and what service they're interested in
+3. For booking/appointment requests, collect their info and let them know the team will follow up
+
+When you have collected a lead (name + phone + service interest), output a special JSON block at the END of your message ONLY, formatted exactly like this:
+LEAD_CAPTURE:{"name":"...","phone":"...","service":"..."}
+
+Do not output the LEAD_CAPTURE block until you have all three pieces of info. Ask naturally, one at a time.
+Never make up information about the business. If unsure, say you'll have someone follow up.`;
+}
+
+// ── Chat ──────────────────────────────────────────────────────────────
+function renderMessages(widget) {
+  const el = document.getElementById(`${widget}-messages`);
+  const p = config.primaryColor;
+  el.innerHTML = histories[widget].map(m => `
+    <div class="msg-row ${m.role === 'user' ? 'user' : ''}">
+      ${m.role === 'assistant' ? `<div class="msg-avatar" style="background:${p}33">${config.avatarEmoji}</div>` : ''}
+      <div class="msg-bubble ${m.role === 'assistant' ? 'bot' : 'user'}"
+        style="${m.role === 'user' ? `background:linear-gradient(135deg,${p},${p}bb)` : ''}">
+        ${m.content}
+      </div>
+    </div>
+  `).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function showTyping(widget) {
+  const el = document.getElementById(`${widget}-messages`);
+  const p = config.primaryColor;
+  const div = document.createElement('div');
+  div.className = 'msg-row';
+  div.id = `${widget}-typing`;
+  div.innerHTML = `
+    <div class="msg-avatar" style="background:${p}33">${config.avatarEmoji}</div>
+    <div class="typing-dots">
+      <div class="typing-dot" style="background:${p}"></div>
+      <div class="typing-dot" style="background:${p}"></div>
+      <div class="typing-dot" style="background:${p}"></div>
+    </div>`;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+}
+
+function hideTyping(widget) {
+  const el = document.getElementById(`${widget}-typing`);
+  if (el) el.remove();
+}
+
+async function sendMsg(widget) {
+  const input = document.getElementById(`${widget}-input`);
+  const txt = input.value.trim();
+  if (!txt) return;
+
+  document.getElementById(`${widget}-error`).style.display = 'none';
+  histories[widget].push({ role: 'user', content: txt });
+  input.value = '';
+  renderMessages(widget);
+  showTyping(widget);
+
+  document.getElementById(`${widget}-send`).disabled = true;
+  document.getElementById(`${widget}-input`).disabled = true;
+
+  try {
+    const res = await fetch(PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: buildSystemPrompt(),
+        messages: histories[widget].map(m => ({ role: m.role, content: m.content })),
+      }),
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    let raw = data.content?.[0]?.text || 'I had trouble responding. Please try again.';
+    let display = raw;
+
+    const lm = raw.match(/LEAD_CAPTURE:(\{.*?\})/);
+    if (lm) {
+      try {
+        const captured = JSON.parse(lm[1]);
+        display = raw.replace(/LEAD_CAPTURE:\{.*?\}/, '').trim();
+        showLeadCard(widget, captured);
+        addLeadToPanel(captured);
+        if (config.emailLeads && config.formspreeId) {
+          fetch(`https://formspree.io/f/${config.formspreeId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ business: config.businessName, ...captured, source: 'Ruby Wall Chatbot' }),
+          }).catch(() => {});
+        }
+      } catch {}
+    }
+
+    hideTyping(widget);
+    histories[widget].push({ role: 'assistant', content: display });
+    renderMessages(widget);
+  } catch {
+    hideTyping(widget);
+    const err = document.getElementById(`${widget}-error`);
+    err.textContent = '⚠️ Connection error — check that your Cloudflare Worker is deployed and the API key is set.';
+    err.style.display = 'block';
+    histories[widget].pop();
+    renderMessages(widget);
+  }
+
+  document.getElementById(`${widget}-send`).disabled = false;
+  document.getElementById(`${widget}-input`).disabled = false;
+  document.getElementById(`${widget}-input`).focus();
+}
+
+function showLeadCard(widget, lead) {
+  const p = config.primaryColor;
+  const card = document.getElementById(`${widget}-lead-card`);
+  card.innerHTML = `
+    <div class="lead-card-title" style="color:${p}">✅ Lead Captured</div>
+    <div class="lead-card-fields">
+      <div>👤 ${lead.name}</div>
+      <div>📞 ${lead.phone}</div>
+      <div>🔧 ${lead.service}</div>
+    </div>
+    ${config.emailLeads && config.formspreeId ? '<div class="lead-email-note" style="display:block">📧 Emailed to client</div>' : ''}
+  `;
+  card.style.display = 'block';
+}
+
+function addLeadToPanel(lead) {
+  leads.unshift({ ...lead, time: new Date().toLocaleTimeString(), business: config.businessName });
+  document.getElementById('no-leads').style.display = 'none';
+  const list = document.getElementById('leads-list');
+  const item = document.createElement('div');
+  item.className = 'lead-item';
+  item.innerHTML = `
+    <div class="lead-item-header">
+      <span class="lead-badge">✅ NEW LEAD</span>
+      <span class="lead-time">${lead.time || new Date().toLocaleTimeString()}</span>
+    </div>
+    <div class="lead-item-fields">
+      <div>👤 ${lead.name}</div>
+      <div>📞 ${lead.phone}</div>
+      <div>🔧 ${lead.service}</div>
+      ${config.businessName ? `<div class="lead-business">📍 ${config.businessName}</div>` : ''}
+    </div>`;
+  list.prepend(item);
+
+  const count = document.getElementById('lead-count');
+  count.style.display = 'block';
+  count.textContent = `${leads.length} lead${leads.length !== 1 ? 's' : ''}`;
+}
+
+// ── Embed Code ────────────────────────────────────────────────────────
+function generateEmbedCode() {
+  const sys = buildSystemPrompt().replace(/`/g, '\\`');
+  const code = `<!-- Ruby Wall Chatbot Widget -->
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<div id="rw-chat-root"></div>
+<script>
+(function(){
+  const CONFIG = ${JSON.stringify(config, null, 2)};
+  const SYSTEM = \`${sys}\`;
+  const PROXY = '${PROXY}';
+  const root = document.getElementById('rw-chat-root');
+  root.innerHTML = \`
+    <div id="rw-bubble" style="position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:${config.primaryColor};display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;box-shadow:0 4px 20px ${config.primaryColor}88;z-index:9999">${config.avatarEmoji}</div>
+    <div id="rw-widget" style="position:fixed;bottom:90px;right:24px;width:360px;height:520px;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5);z-index:9999;display:none;flex-direction:column;font-family:'DM Sans',sans-serif;background:#0f0f13;border:1px solid ${config.primaryColor}33">
+      <div style="background:linear-gradient(135deg,${config.primaryColor}dd,${config.primaryColor}88);padding:14px 18px;display:flex;align-items:center;gap:10px">
+        <div style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:18px">${config.avatarEmoji}</div>
+        <div>
+          <div style="color:#fff;font-weight:700;font-size:15px">${config.botName}</div>
+          <div style="color:rgba(255,255,255,0.75);font-size:12px">${config.businessName || 'AI Assistant'} · Online</div>
+        </div>
+      </div>
+      <div id="rw-msgs" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px"></div>
+      <div style="padding:12px 16px;border-top:1px solid rgba(255,255,255,0.06);display:flex;gap:8px;background:rgba(0,0,0,0.3)">
+        <input id="rw-input" placeholder="Type a message..." style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;color:#f0f0f0;font-size:14px;outline:none;font-family:'DM Sans',sans-serif">
+        <button id="rw-send" style="background:${config.primaryColor};border:none;border-radius:10px;width:42px;cursor:pointer;font-size:18px;color:#fff">➤</button>
+      </div>
+    </div>
+  \`;
+  let msgs=[{role:'assistant',content:CONFIG.welcomeMessage}];
+  const msgsEl=document.getElementById('rw-msgs'),bubble=document.getElementById('rw-bubble'),widget=document.getElementById('rw-widget'),input=document.getElementById('rw-input'),sendBtn=document.getElementById('rw-send');
+  let open=false;
+  function render(){msgsEl.innerHTML=msgs.map(m=>\`<div style="display:flex;justify-content:\${m.role==='user'?'flex-end':'flex-start'}"><div style="max-width:75%;background:\${m.role==='user'?CONFIG.primaryColor:'rgba(255,255,255,0.06)'};color:#f0f0f0;padding:10px 14px;border-radius:\${m.role==='user'?'18px 18px 4px 18px':'18px 18px 18px 4px'};font-size:14px;line-height:1.5">\${m.content}</div></div>\`).join('');msgsEl.scrollTop=msgsEl.scrollHeight;}
+  async function send(){const txt=input.value.trim();if(!txt)return;msgs.push({role:'user',content:txt});input.value='';render();try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM,messages:msgs})});const data=await res.json();let text=data.content?.[0]?.text||'Sorry, try again.';const lm=text.match(/LEAD_CAPTURE:(\\{.*?\\})/);if(lm){try{const lead=JSON.parse(lm[1]);text=text.replace(/LEAD_CAPTURE:\\{.*?\\}/,'').trim();if(CONFIG.emailLeads&&CONFIG.formspreeId){fetch('https://formspree.io/f/'+CONFIG.formspreeId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({business:CONFIG.businessName,...lead,source:'Ruby Wall Chatbot'})});}}catch(e){}}msgs.push({role:'assistant',content:text});}catch(e){msgs.push({role:'assistant',content:'Connection error. Please try again.'});}render();}
+  bubble.onclick=()=>{open=!open;widget.style.display=open?'flex':'none';if(open)render();};
+  sendBtn.onclick=send;input.addEventListener('keydown',e=>e.key==='Enter'&&send());
+  render();
+})();
+<\/script>`;
+
+  const area = document.getElementById('embed-code-area');
+  if (area) area.value = code;
+}
+
+function copyEmbed() {
+  const area = document.getElementById('embed-code-area');
+  navigator.clipboard.writeText(area.value);
+  const btn = document.getElementById('copy-btn');
+  btn.textContent = '✓ Copied!';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'Copy Embed Code'; btn.classList.remove('copied'); }, 2000);
+}
+
+// ── Tab Switching ─────────────────────────────────────────────────────
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === `${id}-panel`));
+  if (id === 'embed') generateEmbedCode();
+  if (id === 'preview') {
+    renderMessages('preview');
+  }
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+// ── Boot ──────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
