@@ -48,7 +48,7 @@
     #tb-logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--red),var(--rdk));display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
     #tb-title{font-family:'Syne',sans-serif;font-weight:800;font-size:13px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #tb-right{display:flex;gap:5px;align-items:center;flex-shrink:0}
-    #trial-badge{background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);border-radius:14px;padding:3px 9px;color:#fbbf24;font-size:11px;font-weight:600;display:none}
+
     #mem-btn{background:var(--s2);border:1px solid var(--border);border-radius:7px;padding:5px 9px;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:4px}
     #mem-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;box-shadow:0 0 5px #4ade80;display:none}
     #mem-dot.active{display:block}
@@ -110,7 +110,7 @@
     .td:nth-child(2){animation-delay:.2s}.td:nth-child(3){animation-delay:.4s}
     @keyframes td{0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-4px);opacity:1}}
     #input-wrap{flex-shrink:0;padding:8px 11px 13px;border-top:1px solid var(--border);background:var(--bg)}
-    #trial-msg{background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:7px;padding:7px 10px;color:#fbbf24;font-size:12px;margin-bottom:6px;display:none;text-align:center}
+
     #irow{display:flex;gap:7px;align-items:flex-end;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:7px 7px 7px 12px;transition:border-color 0.2s}
     #irow:focus-within{border-color:rgba(225,29,72,0.35)}
     #msg-input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;resize:none;line-height:1.5;max-height:90px;min-height:22px}
@@ -425,7 +425,7 @@
     <div id="tb-logo">💎</div>
     <div id="tb-title">Ruby Wall Advisor</div>
     <div id="tb-right">
-      <div id="trial-badge"></div>
+  
       <button id="mem-btn" onclick="openMem()"><div id="mem-dot"></div> Memory</button>
     </div>
   </div>
@@ -465,7 +465,7 @@
         <div id="messages"></div>
         <div id="typing-row"><div class="micon ai">💎</div><div class="tbubble"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>
         <div id="input-wrap">
-          <div id="trial-msg">You've used all 10 free messages. Contact Ruby Wall to upgrade.</div>
+
           <div id="irow">
             <textarea id="msg-input" placeholder="Ask your business advisor anything..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
             <button id="send-btn" onclick="sendMsg()">➤</button>
@@ -493,7 +493,7 @@
 <script>
 const PROXY='https://rubywallapi.gideonmoffitt08.workers.dev/chat';
 const ADMIN='Einstein_Apollo';
-const TRIAL_MAX=10;
+
 const MAX_PLANS=3;
 
 let profile={biz:'',goal:'',time:''};
@@ -727,7 +727,7 @@ function enterAdvisor(){document.getElementById('admin-panel').classList.remove(
 // ADVISOR BOOT
 function startAdvisor(){
   document.getElementById('main').classList.add('show');
-  if(tier==='trial'){trialUsed=parseInt(localStorage.getItem('rw-trial-used')||'0');updateTrial()}
+
   const p=LS.get('rw-profile');
   if(p){profile=p;showCtx();renderSB();loadOrNewChat();}
   else{document.getElementById('onboarding').classList.remove('hidden')}
@@ -975,7 +975,7 @@ async function sendWelcome(){
   setLoading(false);
 }
 async function sendMsg(){
-  if(tier==='trial'&&trialUsed>=TRIAL_MAX)return;
+
   const inp=document.getElementById('msg-input');
   const txt=inp.value.trim();
   if(!txt||loading)return;
@@ -983,7 +983,7 @@ async function sendMsg(){
   currentMsgs.push({role:'user',content:txt});
   inp.value='';inp.style.height='auto';
   setLoading(true);
-  if(tier==='trial'){trialUsed++;localStorage.setItem('rw-trial-used',trialUsed);updateTrial()}
+
   try{
     const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:600,system:sysPrompt(),messages:currentMsgs})});
@@ -1000,10 +1000,19 @@ async function sendMsg(){
 function qs(btn){document.getElementById('msg-input').value=btn.textContent.slice(2).trim();sendMsg()}
 function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg()}}
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,90)+'px'}
+
+
 function updateTrial(){
+  if(tier!=='trial')return;
   const rem=TRIAL_MAX-trialUsed;
-  const b=document.getElementById('trial-badge');b.style.display='block';b.textContent=`${rem} msgs left`;
-  if(rem<=0){document.getElementById('msg-input').disabled=true;document.getElementById('send-btn').disabled=true;document.getElementById('trial-msg').style.display='block'}
+  const b=document.getElementById('trial-badge');
+  b.style.display='block';
+  b.textContent=String(rem)+' msgs left';
+  if(rem<=0){
+    document.getElementById('msg-input').disabled=true;
+    document.getElementById('send-btn').disabled=true;
+    document.getElementById('trial-msg').style.display='block';
+  }
 }
 
 // TABS
