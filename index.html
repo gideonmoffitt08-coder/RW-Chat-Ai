@@ -202,6 +202,34 @@
     #expired{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:20px;background:var(--bg)}
     #expired.show{display:flex}
 
+    /* ACTION ITEMS */
+    .action-item{display:flex;align-items:flex-start;gap:9px;padding:10px 11px;background:var(--surface);border:1px solid var(--border);border-radius:9px;margin-bottom:6px;transition:all 0.15s}
+    .action-item.done{opacity:0.45}
+    .ai-cb{width:17px;height:17px;border-radius:5px;border:2px solid var(--border);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s}
+    .action-item.done .ai-cb{background:#fbbf24;border-color:#fbbf24}
+    .ai-ck{color:#000;font-size:9px;display:none;font-weight:700}
+    .action-item.done .ai-ck{display:block}
+    .ai-text{font-size:13px;line-height:1.5;flex:1}
+    .action-item.done .ai-text{text-decoration:line-through;color:var(--muted)}
+    .ai-del{background:transparent;border:none;color:var(--sub);font-size:12px;cursor:pointer;padding:1px 4px;flex-shrink:0}
+    .ai-del:hover{color:#f87171}
+    .ai-source{color:var(--sub);font-size:10px;margin-top:2px}
+
+    /* EXTRACT MODAL */
+    #extract-modal{position:fixed;inset:0;z-index:180;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.6)}
+    #extract-modal.show{display:flex}
+    #extract-card{background:var(--surface);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:22px 20px;width:100%;max-width:500px;max-height:75vh;display:flex;flex-direction:column}
+    .ex-hdr{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-shrink:0}
+    .ex-hdr h3{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;flex:1}
+    .ex-item{display:flex;align-items:flex-start;gap:9px;padding:9px 11px;background:var(--s2);border:1px solid var(--border);border-radius:9px;margin-bottom:6px;cursor:pointer;transition:all 0.15s}
+    .ex-item.selected{border-color:#fbbf24;background:rgba(251,191,36,0.08)}
+    .ex-cb{width:17px;height:17px;border-radius:5px;border:2px solid var(--border);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center}
+    .ex-item.selected .ex-cb{background:#fbbf24;border-color:#fbbf24}
+    .ex-ck{color:#000;font-size:9px;display:none;font-weight:700}
+    .ex-item.selected .ex-ck{display:block}
+    .ex-text{font-size:13px;line-height:1.5}
+    #extract-list{flex:1;overflow-y:auto;margin-bottom:12px}
+
     /* LOG PROGRESS MODAL */
     #log-modal{position:fixed;inset:0;z-index:180;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.6)}
     #log-modal.show{display:flex}
@@ -470,20 +498,38 @@
             <textarea id="msg-input" placeholder="Ask your business advisor anything..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
             <button id="send-btn" onclick="sendMsg()">➤</button>
           </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:6px">
+            <button id="extract-btn" onclick="extractActionItems()" style="display:none;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);border-radius:7px;padding:5px 11px;color:#fbbf24;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">⚡ Save Action Items</button>
+          </div>
           <div style="color:var(--sub);font-size:10px;text-align:center;margin-top:5px">Ruby Wall AI · Private & Secure</div>
         </div>
       </div>
       <div id="plan-tab">
-        <div id="plan-empty">
+        <!-- ACTION ITEMS SECTION -->
+        <div id="action-items-section" style="padding:13px 11px 0">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:14px">⚡ Action Items</div>
+            <button onclick="clearDoneItems()" style="background:transparent;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif">Clear Completed</button>
+          </div>
+          <div id="action-items-list"></div>
+          <div id="no-action-items" style="color:var(--sub);font-size:12px;text-align:center;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:12px">
+            No action items yet. Chat with your advisor and tap <strong style="color:#fbbf24">⚡ Save Action Items</strong> to extract tasks.
+          </div>
+          <div style="height:1px;background:var(--border);margin:14px 0"></div>
+        </div>
+
+        <!-- GROWTH PLAN SECTION -->
+        <div id="plan-empty" style="padding:20px 18px;text-align:center">
           <div class="pe-icon">📋</div>
           <h3>Your <span>Growth Plan</span></h3>
           <p>Generate a personalized 30 or 90-day action plan built for your business.</p>
           <button class="genbtn" onclick="openPG()">⚡ Generate My Plan</button>
         </div>
         <div id="plan-content">
-          <div id="plan-sw"></div>
-          <div id="plan-render"></div>
-          <div style="padding:0 0 18px;text-align:center"><button class="genbtn" style="font-size:13px;padding:10px 20px" onclick="openPG()">+ New Plan</button></div>
+          <div style="padding:0 11px"><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:14px;margin-bottom:10px">📋 Growth Plan</div></div>
+          <div id="plan-sw" style="padding:0 11px"></div>
+          <div id="plan-render" style="padding:0 11px"></div>
+          <div style="padding:0 11px 18px;text-align:center"><button class="genbtn" style="font-size:13px;padding:10px 20px" onclick="openPG()">+ New Plan</button></div>
         </div>
       </div>
     </div>
@@ -896,7 +942,7 @@ function clearMem(){if(confirm('Clear all memory? Your advisor will start fresh.
 
 async function updateMemory(msgs){
   if(msgs.length<2)return;
-  const convo=msgs.map(m=>`${m.role==='user'?'Client':'Advisor'}: ${m.content}`).join('\n');
+  const convo=msgs.map(m=>`${m.role==='user'?'Client':'Advisor'}: ${m.content}`).join(' | ');
   const existing=getMem();
   try{
     const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},
@@ -1199,6 +1245,136 @@ Based on what I've accomplished, give me:
   switchTab('chat');
 }
 
+
+// ── ACTION ITEMS ──────────────────────────────────────────────────────
+let extractedItems = [];
+
+function getActionItems() { return LS.get('rw-action-items') || []; }
+function saveActionItemsDB(items) { LS.set('rw-action-items', items); }
+
+function renderActionItems() {
+  const items = getActionItems();
+  const list = document.getElementById('action-items-list');
+  const empty = document.getElementById('no-action-items');
+  if (!items.length) {
+    empty.style.display = 'block';
+    list.innerHTML = '';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = items.map((item, i) => `
+    <div class="action-item ${item.done ? 'done' : ''}">
+      <div class="ai-cb" onclick="toggleActionItem(${i})"><span class="ai-ck">✓</span></div>
+      <div style="flex:1">
+        <div class="ai-text">${item.text}</div>
+        <div class="ai-source">From chat · ${new Date(item.created).toLocaleDateString()}</div>
+      </div>
+      <button class="ai-del" onclick="deleteActionItem(${i})">✕</button>
+    </div>`).join('');
+}
+
+function toggleActionItem(i) {
+  const items = getActionItems();
+  items[i].done = !items[i].done;
+  saveActionItemsDB(items);
+  renderActionItems();
+}
+
+function deleteActionItem(i) {
+  const items = getActionItems();
+  items.splice(i, 1);
+  saveActionItemsDB(items);
+  renderActionItems();
+}
+
+function clearDoneItems() {
+  const items = getActionItems().filter(item => !item.done);
+  saveActionItemsDB(items);
+  renderActionItems();
+}
+
+// Show extract button after each AI response
+function showExtractBtn() {
+  const btn = document.getElementById('extract-btn');
+  if (btn) btn.style.display = 'block';
+}
+
+async function extractActionItems() {
+  if (!currentMsgs.length) return;
+  document.getElementById('extract-modal').classList.add('show');
+  document.getElementById('extract-loading').style.display = 'block';
+  document.getElementById('extract-list').innerHTML = '';
+  extractedItems = [];
+
+  // Get last few messages for context
+  const recentMsgs = currentMsgs.slice(-8);
+  const convo = recentMsgs.map(function(m){return(m.role==='user'?'Client: ':'Advisor: ')+m.content;}).join(' | ');
+
+  try {
+    const res = await fetch(PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 600,
+        messages: [{
+          role: 'user',
+          content: 'Extract action items from this conversation as a JSON array only. Each item max 15 words. No markdown. Conversation: ' + convo
+        }]
+      })
+    });
+    const d = JSON.parse(await res.text());
+    let raw = d.content?.[0]?.text || '[]';
+    raw = raw.replace(/```json|```/g, '').trim();
+    const items = JSON.parse(raw);
+    extractedItems = Array.isArray(items) ? items : [];
+  } catch {
+    extractedItems = [];
+  }
+
+  document.getElementById('extract-loading').style.display = 'none';
+
+  if (!extractedItems.length) {
+    document.getElementById('extract-list').innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px">No action items found in this conversation. Try asking your advisor for specific next steps.</div>';
+    return;
+  }
+
+  document.getElementById('extract-list').innerHTML = extractedItems.map((item, i) => `
+    <div class="ex-item selected" onclick="toggleExtractItem(this)" data-idx="${i}">
+      <div class="ex-cb"><span class="ex-ck">✓</span></div>
+      <div class="ex-text">${item}</div>
+    </div>`).join('');
+}
+
+function toggleExtractItem(el) {
+  el.classList.toggle('selected');
+}
+
+function selectAllExtract() {
+  document.querySelectorAll('.ex-item').forEach(el => el.classList.add('selected'));
+}
+
+function saveSelectedItems() {
+  const selected = [];
+  document.querySelectorAll('.ex-item.selected').forEach(el => {
+    const idx = parseInt(el.dataset.idx);
+    if (extractedItems[idx]) selected.push(extractedItems[idx]);
+  });
+  if (!selected.length) { closeExtract(); return; }
+  const existing = getActionItems();
+  const newItems = selected.map(text => ({ text, done: false, created: Date.now() }));
+  saveActionItemsDB([...newItems, ...existing]);
+  closeExtract();
+  renderActionItems();
+  // Switch to plan tab to show saved items
+  switchTab('plan');
+}
+
+function closeExtract() {
+  document.getElementById('extract-modal').classList.remove('show');
+  extractedItems = [];
+}
+
 // HELPERS
 function hide(id){document.getElementById(id).classList.add('hidden')}
 function show(id){document.getElementById(id).classList.remove('hidden')}
@@ -1209,6 +1385,26 @@ try{const s=LS.get('rw-session');if(s&&s.tier==='admin')LS.del('rw-session')}cat
 const m=getMem();if(m)document.getElementById('mem-dot').classList.add('active');
 checkSession();
 </script>
+
+<!-- EXTRACT ACTION ITEMS MODAL -->
+<div id="extract-modal">
+  <div id="extract-card">
+    <div class="ex-hdr">
+      <div style="width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#fbbf24,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:13px">⚡</div>
+      <h3>Save Action Items</h3>
+      <button class="mem-close" onclick="closeExtract()">Close</button>
+    </div>
+    <div style="color:var(--muted);font-size:12px;margin-bottom:11px;flex-shrink:0">Tap items to select, then save to your Action Items list.</div>
+    <div id="extract-loading" style="text-align:center;padding:20px;display:none">
+      <div style="color:var(--muted);font-size:13px">⚡ Extracting action items...</div>
+    </div>
+    <div id="extract-list"></div>
+    <div style="display:flex;gap:7px;flex-shrink:0">
+      <button onclick="selectAllExtract()" style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:10px 0;color:var(--muted);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">Select All</button>
+      <button onclick="saveSelectedItems()" style="flex:2;background:linear-gradient(135deg,#fbbf24,#f59e0b);border:none;border-radius:9px;padding:10px 0;color:#000;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">Save Selected →</button>
+    </div>
+  </div>
+</div>
 
 <!-- LOG PROGRESS MODAL -->
 <div id="log-modal">
