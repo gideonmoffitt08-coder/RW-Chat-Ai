@@ -443,8 +443,8 @@
           <button class="qs" onclick="qs(this)">🚀 Set up my business</button>
         </div>
 
-        <!-- BRIEFING CARD -->
-        <div id="briefing-card">
+        <!-- BRIEFING CARD - sits between quick starts and messages -->
+        <div id="briefing-card" style="flex-shrink:0;overflow-y:auto;max-height:55vh">
           <div class="brief-loading">
             <div class="brief-spinner"></div>
             <div class="brief-loading-txt">🔍 Searching the web for your industry...</div>
@@ -1041,7 +1041,9 @@ const BRIEFING_URL = 'https://rubywallapi.gideonmoffitt08.workers.dev/briefing';
 async function getBriefing() {
   const card = document.getElementById('briefing-card');
   card.classList.add('show', 'loading');
-  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  // Hide messages temporarily and scroll to top of chat tab
+  document.getElementById('messages').scrollTop = 0;
+  setTimeout(() => { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
 
   // Get plan progress
   const plans = getPlans();
@@ -1115,6 +1117,9 @@ Use ONLY these exact markers. Do not use any other headers or formatting outside
 
     card.classList.remove('loading');
     document.getElementById('brief-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    // Scroll messages to top so briefing card is visible
+    document.getElementById('messages').scrollTop = 0;
+    setTimeout(() => { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
     document.getElementById('brief-news').innerHTML = getSection('NEWS', 'No news data available right now.').replace(/\n/g, '<br>');
     document.getElementById('brief-market').innerHTML = getSection('MARKET', 'Market data unavailable.').replace(/\n/g, '<br>');
     document.getElementById('brief-progress').innerHTML = getSection('PROGRESS', progressSummary).replace(/\n/g, '<br>');
