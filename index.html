@@ -1036,7 +1036,7 @@ function saveProfile(){
 
 
 // ── BRIEFING ─────────────────────────────────────────────────────────
-const BRIEFING_URL = 'https://rubywallapi.gideonmoffitt08.workers.dev/briefing';
+const BRIEFING_URL = 'https://rubywallapi.gideonmoffitt08.workers.dev/chat';
 
 async function getBriefing() {
   const card = document.getElementById('briefing-card');
@@ -1089,8 +1089,10 @@ Use ONLY these exact markers. Do not use any other headers or formatting outside
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 1000,
         system: sys,
-        messages: [{ role: 'user', content: `Search for the latest news and market trends for ${profile.biz} businesses and give me my weekly briefing.` }]
+        messages: [{ role: 'user', content: `Give me my personalized weekly business briefing for my ${profile.biz} business. Focus on what matters most for my goal to ${profile.goal}.` }]
       })
     });
 
