@@ -202,31 +202,6 @@
     #expired{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:20px;background:var(--bg)}
     #expired.show{display:flex}
 
-    /* ── BRIEFING ── */
-    #briefing-card{margin:10px 11px;background:var(--surface);border:1px solid rgba(225,29,72,0.25);border-radius:14px;overflow:hidden;display:none}
-    #briefing-card.show{display:block}
-    .brief-hdr{background:linear-gradient(135deg,rgba(225,29,72,0.15),rgba(225,29,72,0.05));padding:13px 14px;display:flex;align-items:center;gap:9px;border-bottom:1px solid rgba(225,29,72,0.15)}
-    .brief-hdr-icon{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--red),var(--rdk));display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-    .brief-hdr-text{flex:1}
-    .brief-hdr-title{font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:var(--text)}
-    .brief-hdr-sub{font-size:11px;color:var(--muted)}
-    .brief-close{background:transparent;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 6px}
-    .brief-body{padding:13px 14px;display:flex;flex-direction:column;gap:12px}
-    .brief-section{background:var(--s2);border-radius:10px;padding:11px 12px}
-    .brief-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:7px;display:flex;align-items:center;gap:5px}
-    .brief-section-title.news{color:#60a5fa}
-    .brief-section-title.market{color:#34d399}
-    .brief-section-title.progress{color:#fbbf24}
-    .brief-section-title.focus{color:var(--red)}
-    .brief-section-content{font-size:13px;color:#ccc;line-height:1.65}
-    .brief-loading{text-align:center;padding:20px 14px;display:none}
-    #briefing-card.loading .brief-loading{display:block}
-    #briefing-card.loading .brief-body{display:none}
-    .brief-spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .brief-loading-txt{color:var(--muted);font-size:13px}
-    .brief-loading-sub{color:var(--sub);font-size:11px;margin-top:4px}
-
     /* LOG PROGRESS MODAL */
     #log-modal{position:fixed;inset:0;z-index:180;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.6)}
     #log-modal.show{display:flex}
@@ -434,7 +409,6 @@
     <div id="chat-area">
       <div id="chat-tab">
         <div id="qs-row">
-          <button class="qs" style="background:linear-gradient(135deg,rgba(225,29,72,0.2),rgba(225,29,72,0.1));border-color:rgba(225,29,72,0.3);color:var(--red);font-weight:700" onclick="getBriefing()">⚡ Get My Briefing</button>
           <button class="qs" style="background:rgba(74,222,128,0.08);border-color:rgba(74,222,128,0.2);color:#4ade80;font-weight:700" onclick="openLog()">✅ Log Progress</button>
           <button class="qs" onclick="qs(this)">📈 Get more customers</button>
           <button class="qs" onclick="qs(this)">🌐 Need a website?</button>
@@ -443,40 +417,7 @@
           <button class="qs" onclick="qs(this)">🚀 Set up my business</button>
         </div>
 
-        <!-- BRIEFING CARD - sits between quick starts and messages -->
-        <div id="briefing-card" style="flex-shrink:0;overflow-y:auto;max-height:55vh">
-          <div class="brief-loading">
-            <div class="brief-spinner"></div>
-            <div class="brief-loading-txt">🔍 Searching the web for your industry...</div>
-            <div class="brief-loading-sub">Pulling news, market data & recommendations</div>
-          </div>
-          <div class="brief-hdr">
-            <div class="brief-hdr-icon">⚡</div>
-            <div class="brief-hdr-text">
-              <div class="brief-hdr-title">Your Business Briefing</div>
-              <div class="brief-hdr-sub" id="brief-date"></div>
-            </div>
-            <button class="brief-close" onclick="closeBriefing()">✕</button>
-          </div>
-          <div class="brief-body">
-            <div class="brief-section">
-              <div class="brief-section-title news">🗞️ Industry News</div>
-              <div class="brief-section-content" id="brief-news">Loading...</div>
-            </div>
-            <div class="brief-section">
-              <div class="brief-section-title market">📊 Market Pulse</div>
-              <div class="brief-section-content" id="brief-market">Loading...</div>
-            </div>
-            <div class="brief-section">
-              <div class="brief-section-title progress">✅ Your Progress</div>
-              <div class="brief-section-content" id="brief-progress">Loading...</div>
-            </div>
-            <div class="brief-section">
-              <div class="brief-section-title focus">🎯 This Week's Focus</div>
-              <div class="brief-section-content" id="brief-focus">Loading...</div>
-            </div>
-          </div>
-        </div>
+
         <div id="ctx-bar"></div>
         <div id="messages"></div>
         <div id="typing-row"><div class="micon ai">💎</div><div class="tbubble"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>
@@ -567,7 +508,6 @@ function doLogout(){
   document.getElementById('login-input').value='';
   document.getElementById('admin-panel').classList.remove('show');
   document.getElementById('main').classList.remove('show');
-  document.getElementById('briefing-card').classList.remove('show','loading');
   show('login-screen');
 }
 
@@ -618,7 +558,6 @@ function enterAdvisor(){document.getElementById('admin-panel').classList.remove(
 // ADVISOR BOOT
 function startAdvisor(){
   document.getElementById('main').classList.add('show');
-  document.getElementById('briefing-card').classList.remove('show','loading');
   if(tier==='trial'){trialUsed=parseInt(localStorage.getItem('rw-trial-used')||'0');updateTrial()}
   const p=LS.get('rw-profile');
   if(p){profile=p;showCtx();renderSB();loadOrNewChat();}
@@ -1037,118 +976,7 @@ function saveProfile(){
 }
 
 
-// ── BRIEFING ─────────────────────────────────────────────────────────
-const BRIEFING_URL = 'https://rubywallapi.gideonmoffitt08.workers.dev/chat';
-
-async function getBriefing() {
-  const card = document.getElementById('briefing-card');
-  card.classList.add('show', 'loading');
-  // Hide messages temporarily and scroll to top of chat tab
-  document.getElementById('messages').scrollTop = 0;
-  setTimeout(() => { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
-
-  // Get plan progress
-  const plans = getPlans();
-  let progressSummary = 'No plan generated yet.';
-  if (plans.length > 0) {
-    const p = plans[activePlanIdx] || plans[0];
-    const checks = p.checks || {};
-    const total = p.phases.reduce((a, ph) => a + ph.tasks.length, 0);
-    const done = Object.values(checks).filter(Boolean).length;
-    const completed = p.phases.flatMap((ph, pi) =>
-      ph.tasks.filter((_, ti) => checks[`${pi}-${ti}`])
-    );
-    progressSummary = `${done} of ${total} tasks completed on their ${p.days}-day plan.${completed.length ? ' Completed: ' + completed.slice(0,3).join(', ') + '.' : ''}`;
-  }
-
-  const mem = getMem();
-  const sys = `You are a business intelligence advisor giving a weekly briefing to a ${profile.biz} business owner.
-Their goal: ${profile.goal}. Experience: ${profile.time}.
-${mem ? 'What you know about them: ' + mem : ''}
-Plan progress: ${progressSummary}
-
-Search the web for the latest news and market conditions relevant to their business.
-After searching, provide your briefing using EXACTLY these markers (copy them exactly):
-
-##NEWS##
-Write 2-3 sentences about the latest news for ${profile.biz} businesses here.
-
-##MARKET##
-Write 2-3 sentences about current market conditions for ${profile.biz} businesses here.
-
-##PROGRESS##
-Write 1-2 sentences acknowledging their plan progress here.
-
-##FOCUS##
-1. First action item
-2. Second action item
-3. Third action item
-
-Use ONLY these exact markers. Do not use any other headers or formatting outside the sections.`;
-
-  try {
-    const res = await fetch(BRIEFING_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 1000,
-        system: sys,
-        messages: [{ role: 'user', content: `Give me my personalized weekly business briefing for my ${profile.biz} business. Focus on what matters most for my goal to ${profile.goal}.` }]
-      })
-    });
-
-    const raw = await res.text();
-    const d = JSON.parse(raw);
-
-    // Extract text from all content blocks (including after tool use)
-    let fullText = '';
-    if (d.content && Array.isArray(d.content)) {
-      d.content.forEach(block => {
-        if (block.type === 'text') fullText += block.text + '\n';
-      });
-    }
-    fullText = fullText.trim();
-
-    if (!fullText) throw new Error('No text in response');
-
-    // Parse sections
-    const getSection = (key, fallback) => {
-      const rx = new RegExp(`##${key}##\s*([\s\S]*?)(?=##|$)`, 'i');
-      const m = fullText.match(rx);
-      return m ? m[1].trim() : fallback;
-    };
-
-    card.classList.remove('loading');
-    document.getElementById('brief-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-    // Scroll messages to top so briefing card is visible
-    document.getElementById('messages').scrollTop = 0;
-    setTimeout(() => { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
-    document.getElementById('brief-news').innerHTML = getSection('NEWS', 'No news data available right now.').replace(/\n/g, '<br>');
-    document.getElementById('brief-market').innerHTML = getSection('MARKET', 'Market data unavailable.').replace(/\n/g, '<br>');
-    document.getElementById('brief-progress').innerHTML = getSection('PROGRESS', progressSummary).replace(/\n/g, '<br>');
-    document.getElementById('brief-focus').innerHTML = getSection('FOCUS', 'Keep working on your current plan tasks.').replace(/\n/g, '<br>');
-
-    // Save briefing to chat history
-    currentMsgs.push({ role: 'user', content: 'Get my weekly briefing' });
-    currentMsgs.push({ role: 'assistant', content: '**Weekly Briefing Generated** — ' + new Date().toLocaleDateString() + '\n\n' + fullText });
-    saveCurrentChat(); renderSB();
-
-  } catch(e) {
-    card.classList.remove('loading');
-    document.getElementById('brief-news').textContent = 'Unable to fetch briefing right now. Please try again.';
-    document.getElementById('brief-market').textContent = '';
-    document.getElementById('brief-progress').textContent = '';
-    document.getElementById('brief-focus').textContent = '';
-    console.log('Briefing error:', e);
-  }
-}
-
-function closeBriefing() {
-  document.getElementById('briefing-card').classList.remove('show', 'loading');
-}
-
-// ── LOG PROGRESS ──────────────────────────────────────────────────────
+// ── LOG PROGRESS ──────────────────────────────────────────────────────────
 function openLog() { document.getElementById('log-modal').classList.add('show'); }
 function closeLog() { document.getElementById('log-modal').classList.remove('show'); document.getElementById('log-input').value = ''; }
 
