@@ -567,6 +567,7 @@ function doLogout(){
   document.getElementById('login-input').value='';
   document.getElementById('admin-panel').classList.remove('show');
   document.getElementById('main').classList.remove('show');
+  document.getElementById('briefing-card').classList.remove('show','loading');
   show('login-screen');
 }
 
@@ -617,6 +618,7 @@ function enterAdvisor(){document.getElementById('admin-panel').classList.remove(
 // ADVISOR BOOT
 function startAdvisor(){
   document.getElementById('main').classList.add('show');
+  document.getElementById('briefing-card').classList.remove('show','loading');
   if(tier==='trial'){trialUsed=parseInt(localStorage.getItem('rw-trial-used')||'0');updateTrial()}
   const p=LS.get('rw-profile');
   if(p){profile=p;showCtx();renderSB();loadOrNewChat();}
