@@ -701,26 +701,28 @@ function closeMem(){document.getElementById('mem-modal').classList.remove('show'
 function clearMem(){if(confirm('Clear all memory? Your advisor will start fresh.')){saveMem('');closeMem()}}
 
 async function updateMemory(msgs){
-  if(msgs.length<4)return; // wait for meaningful conversation
+  if(msgs.length<2)return;
   const convo=msgs.map(m=>`${m.role==='user'?'Client':'Advisor'}: ${m.content}`).join('\n');
   const existing=getMem();
   try{
     const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:400,
-        messages:[{role:'user',content:`You are a memory extractor. Given this business advisory conversation, extract and update a concise memory summary.
+      body:JSON.stringify({
+        model:'claude-sonnet-4-5',
+        max_tokens:300,
+        system:'You are a memory extractor. Extract key facts from business advisory conversations into a concise summary. Plain text only, no formatting.',
+        messages:[{role:'user',content:`Update the memory summary with new information from this conversation.
 
-Existing memory:
-${existing||'(none)'}
+Current memory:
+${existing||'(none yet)'}
 
 New conversation:
 ${convo}
 
-Extract: key business facts, decisions made, action items discussed, problems mentioned, progress updates.
-Write a concise paragraph (max 150 words) merging old and new info. Only facts, no fluff. Plain text only.`}]})});
+Write a single concise paragraph (max 120 words) with: business type, goals, challenges mentioned, decisions made, action items discussed. Merge with existing memory. Plain text only.`}]})});
     const d=JSON.parse(await res.text());
     const mem=d.content?.[0]?.text||'';
     if(mem)saveMem(mem);
-  }catch{}
+  }catch(e){console.log('Memory update failed:',e)}
 }
 
 // SYSTEM PROMPT
@@ -765,7 +767,7 @@ async function sendWelcome(){
   try{
     const mem=getMem();
     const intro=mem
-      ?`Welcome back. Based on what I remember: ${mem.slice(0,100)}... What would you like to work on today?`
+      ?`Welcome me back as a returning client. Based on what you remember about my business, give a brief personalized greeting and suggest what we should focus on today. Keep it under 80 words.`
       :`Introduce yourself briefly and give one specific quick win for my ${profile.biz} business focused on: ${profile.goal}. Keep it under 80 words.`;
     const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:300,system:sysPrompt(),
@@ -796,8 +798,8 @@ async function sendMsg(){
     addMsgEl('ai',reply);
     currentMsgs.push({role:'assistant',content:reply});
     saveCurrentChat();renderSB();
-    // Update memory every 4 messages
-    if(currentMsgs.length%4===0)updateMemory(currentMsgs);
+    // Update memory after every AI response
+    updateMemory(currentMsgs);
   }catch{addMsgEl('ai','Connection error. Please try again.')}
   setLoading(false);
 }
