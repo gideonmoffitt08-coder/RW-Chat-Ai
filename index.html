@@ -213,16 +213,59 @@
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- LOGIN / ACTIVATE SCREEN -->
 <div class="ov" id="login-screen">
   <div class="card">
     <div class="clogo">💎</div>
     <div class="ctitle">Ruby Wall <span>Advisor</span></div>
-    <div class="csub">Enter your password or invite code to access your AI business consultant.</div>
-    <div class="field"><label>Password or Invite Code</label><input class="inp" id="login-input" type="password" placeholder="Enter your code..." onkeydown="if(event.key==='Enter')doLogin()" /></div>
-    <button class="btnp" onclick="doLogin()">Access Advisor →</button>
-    <div class="err" id="login-err">Invalid code or password. Please try again.</div>
-    <p style="color:var(--sub);font-size:11px;text-align:center;margin-top:13px">Don't have a code? Contact Ruby Wall.</p>
+
+    <!-- Tab switcher -->
+    <div style="display:flex;gap:0;background:var(--s2);border-radius:10px;padding:3px;margin-bottom:20px">
+      <button id="lt-login" onclick="switchAuthTab('login')" style="flex:1;padding:8px 0;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;background:var(--red);color:#fff;transition:all 0.2s">Sign In</button>
+      <button id="lt-activate" onclick="switchAuthTab('activate')" style="flex:1;padding:8px 0;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;background:transparent;color:var(--muted);transition:all 0.2s">Activate Account</button>
+    </div>
+
+    <!-- SIGN IN -->
+    <div id="auth-login">
+      <div class="csub" style="margin-bottom:18px">Welcome back. Sign in to access your business advisor.</div>
+      <div class="field"><label>Password</label><input class="inp" id="login-input" type="password" placeholder="Enter your password..." onkeydown="if(event.key==='Enter')doLogin()" /></div>
+      <button class="btnp" onclick="doLogin()">Sign In →</button>
+      <div class="err" id="login-err">Incorrect password. Please try again.</div>
+      <p style="color:var(--sub);font-size:11px;text-align:center;margin-top:13px">New client? Tap <strong style="color:var(--muted)">Activate Account</strong> to get started.</p>
+    </div>
+
+    <!-- ACTIVATE ACCOUNT -->
+    <div id="auth-activate" style="display:none">
+      <!-- Step 1: Enter invite code -->
+      <div id="act-step1">
+        <div class="csub" style="margin-bottom:18px">Enter the invite code provided by Ruby Wall to activate your account.</div>
+        <div class="field"><label>Invite Code</label><input class="inp" id="act-code" placeholder="e.g. RWP-XXXXXXXX" onkeydown="if(event.key==='Enter')verifyInviteCode()" /></div>
+        <button class="btnp" onclick="verifyInviteCode()">Verify Code →</button>
+        <div class="err" id="act-err1">Invalid or already used invite code.</div>
+      </div>
+
+      <!-- Step 2: Create account -->
+      <div id="act-step2" style="display:none">
+        <div style="background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-radius:9px;padding:10px 13px;margin-bottom:18px;display:flex;align-items:center;gap:8px">
+          <span style="color:#4ade80;font-size:16px">✓</span>
+          <span style="color:#4ade80;font-size:13px;font-weight:600">Invite code verified! Create your account below.</span>
+        </div>
+        <div class="field"><label>Your Name or Business Name</label><input class="inp" id="act-name" placeholder="e.g. Mike's Auto Repair" /></div>
+        <div class="field"><label>Create a Password</label><input class="inp" id="act-pass" type="password" placeholder="Choose a secure password" /></div>
+        <div class="field"><label>Confirm Password</label><input class="inp" id="act-pass2" type="password" placeholder="Re-enter your password" onkeydown="if(event.key==='Enter')createAccount()" /></div>
+        <button class="btnp" onclick="createAccount()">Create My Account →</button>
+        <div class="err" id="act-err2">Please fill all fields and make sure passwords match.</div>
+      </div>
+
+      <!-- Step 3: Success -->
+      <div id="act-step3" style="display:none;text-align:center">
+        <div style="font-size:44px;margin-bottom:14px">🎉</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:19px;margin-bottom:8px">Account Created!</div>
+        <div style="color:var(--muted);font-size:13px;margin-bottom:22px;line-height:1.6">Welcome to Ruby Wall Advisor. Your account is ready. Use your password to sign in anytime.</div>
+        <button class="btnp" onclick="goToLogin()">Sign In Now →</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -489,17 +532,143 @@ function validateCode(code){
 
 // AUTH
 function doLogin(){
-  const val=document.getElementById('login-input').value.trim();
-  const res=validateCode(val);
-  if(!res.ok){
-    if(res.expired){hide('login-screen');show('expired');return}
-    document.getElementById('login-err').classList.add('show');return;
-  }
+  const val = document.getElementById('login-input').value.trim();
   document.getElementById('login-err').classList.remove('show');
-  hide('login-screen');
-  tier=res.tier;
-  if(tier!=='admin')LS.set('rw-session',{tier,code:val});
-  tier==='admin'?showAdmin():startAdvisor();
+
+  // Check admin password first
+  if (val === ADMIN) {
+    hide('login-screen');
+    tier = 'admin';
+    showAdmin();
+    return;
+  }
+
+  // Check personal account passwords
+  const accounts = getAccounts();
+  const account = accounts.find(a => atob(a.password) === val);
+  if (account) {
+    // Verify the linked invite code is still valid
+    const codeRes = validateCode(account.inviteCode);
+    if (!codeRes.ok) {
+      if (codeRes.expired) { hide('login-screen'); show('expired'); return; }
+      document.getElementById('login-err').classList.add('show');
+      document.getElementById('login-err').textContent = 'Your account access has been revoked. Contact Ruby Wall.';
+      return;
+    }
+    hide('login-screen');
+    tier = account.tier;
+    LS.set('rw-session', { tier: account.tier, code: account.inviteCode, name: account.name });
+    // Set profile business name from account if not set
+    const savedProfile = LS.get('rw-profile');
+    if (!savedProfile || !savedProfile.biz) {
+      // Will trigger onboarding
+    }
+    startAdvisor();
+    return;
+  }
+
+  // Invalid
+  document.getElementById('login-err').classList.add('show');
+  document.getElementById('login-err').textContent = 'Incorrect password. New client? Tap Activate Account.';
+}
+
+// ── AUTH TAB SWITCHING ───────────────────────────────────────────────
+function switchAuthTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('auth-login').style.display = isLogin ? 'block' : 'none';
+  document.getElementById('auth-activate').style.display = isLogin ? 'none' : 'block';
+  document.getElementById('lt-login').style.background = isLogin ? 'var(--red)' : 'transparent';
+  document.getElementById('lt-login').style.color = isLogin ? '#fff' : 'var(--muted)';
+  document.getElementById('lt-activate').style.background = isLogin ? 'transparent' : 'var(--red)';
+  document.getElementById('lt-activate').style.color = isLogin ? 'var(--muted)' : '#fff';
+  // Reset activate steps
+  if (!isLogin) {
+    document.getElementById('act-step1').style.display = 'block';
+    document.getElementById('act-step2').style.display = 'none';
+    document.getElementById('act-step3').style.display = 'none';
+    document.getElementById('act-code').value = '';
+    document.getElementById('act-err1').classList.remove('show');
+  }
+}
+
+// ── ACCOUNT STORAGE ───────────────────────────────────────────────────
+function getAccounts() { return LS.get('rw-accounts') || []; }
+function saveAccounts(a) { LS.set('rw-accounts', a); }
+
+// ── VERIFY INVITE CODE ────────────────────────────────────────────────
+let pendingInviteCode = '';
+function verifyInviteCode() {
+  const code = document.getElementById('act-code').value.trim().toUpperCase();
+  document.getElementById('act-err1').classList.remove('show');
+
+  // Check it's a valid unused code
+  const res = validateCode(code);
+  if (!res.ok) {
+    document.getElementById('act-err1').classList.add('show');
+    document.getElementById('act-err1').textContent = res.expired ? 'This invite code has expired. Contact Ruby Wall.' : 'Invalid invite code. Please check and try again.';
+    return;
+  }
+  if (res.tier === 'admin') {
+    document.getElementById('act-err1').classList.add('show');
+    document.getElementById('act-err1').textContent = 'Admin accounts cannot be created here.';
+    return;
+  }
+  // Check not already activated
+  const accounts = getAccounts();
+  if (accounts.find(a => a.inviteCode === code)) {
+    document.getElementById('act-err1').classList.add('show');
+    document.getElementById('act-err1').textContent = 'This invite code has already been used to create an account.';
+    return;
+  }
+
+  pendingInviteCode = code;
+  document.getElementById('act-step1').style.display = 'none';
+  document.getElementById('act-step2').style.display = 'block';
+}
+
+// ── CREATE ACCOUNT ────────────────────────────────────────────────────
+function createAccount() {
+  const name = document.getElementById('act-name').value.trim();
+  const pass = document.getElementById('act-pass').value;
+  const pass2 = document.getElementById('act-pass2').value;
+  document.getElementById('act-err2').classList.remove('show');
+
+  if (!name || !pass || pass.length < 6) {
+    document.getElementById('act-err2').classList.add('show');
+    document.getElementById('act-err2').textContent = 'Please fill all fields. Password must be at least 6 characters.';
+    return;
+  }
+  if (pass !== pass2) {
+    document.getElementById('act-err2').classList.add('show');
+    document.getElementById('act-err2').textContent = 'Passwords do not match. Please try again.';
+    return;
+  }
+
+  // Get the tier from invite code
+  const codes = getCodes();
+  const entry = codes.find(c => c.code === pendingInviteCode);
+  const accountTier = entry ? entry.tier : 'paid';
+
+  // Save account
+  const accounts = getAccounts();
+  accounts.push({
+    name,
+    password: btoa(pass), // basic encoding
+    inviteCode: pendingInviteCode,
+    tier: accountTier,
+    created: Date.now()
+  });
+  saveAccounts(accounts);
+
+  // Show success
+  document.getElementById('act-step2').style.display = 'none';
+  document.getElementById('act-step3').style.display = 'block';
+}
+
+function goToLogin() {
+  switchAuthTab('login');
+  document.getElementById('login-input').value = '';
+  document.getElementById('login-input').focus();
 }
 
 function doLogout(){
