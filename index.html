@@ -1313,15 +1313,20 @@ async function extractActionItems() {
         max_tokens: 600,
         messages: [{
           role: 'user',
-          content: 'Extract action items from this conversation as a JSON array only. Each item max 15 words. No markdown. Conversation: ' + convo
+          content: 'Extract action items from this conversation. Return ONLY a valid JSON array of plain strings. Example: ["Set up Google Business Profile","Post 3 times on Instagram","Follow up with 5 customers"]. No objects, no keys, just strings. Conversation: ' + convo
         }]
       })
     });
     const d = JSON.parse(await res.text());
     let raw = d.content?.[0]?.text || '[]';
     raw = raw.replace(/```json|```/g, '').trim();
-    const items = JSON.parse(raw);
-    extractedItems = Array.isArray(items) ? items : [];
+    const parsed = JSON.parse(raw);
+    // Handle both array of strings and array of objects
+    extractedItems = Array.isArray(parsed) ? parsed.map(item => {
+      if (typeof item === 'string') return item;
+      if (typeof item === 'object') return item.task || item.text || item.action || item.item || item.description || JSON.stringify(item);
+      return String(item);
+    }) : [];
   } catch {
     extractedItems = [];
   }
