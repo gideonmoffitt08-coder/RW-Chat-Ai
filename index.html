@@ -12,809 +12,937 @@
       --border: rgba(255,255,255,0.06); --red: #e11d48; --red-dark: #9f1239;
       --red-glow: rgba(225,29,72,0.12); --text: #f0f0f0; --muted: #666; --sub: #444;
     }
-    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100dvh; display: flex; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-    body::before { content: ''; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(ellipse at 20% 20%, rgba(225,29,72,0.04) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(225,29,72,0.03) 0%, transparent 50%); pointer-events: none; z-index: 0; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      display: flex; flex-direction: column;
+      height: 100dvh; overflow: hidden;
+    }
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
 
-    /* ── LOGIN SCREEN ── */
-    #login-screen {
+    /* ── OVERLAYS ── */
+    .overlay {
       position: fixed; inset: 0; z-index: 100;
       display: flex; align-items: center; justify-content: center;
-      padding: 24px; background: var(--bg);
+      padding: 20px; background: rgba(12,12,15,0.98);
     }
-    #login-screen.hidden { display: none; }
-    .login-card {
+    .overlay.hidden { display: none; }
+    .card {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 24px; padding: 48px 40px; max-width: 420px; width: 100%;
+      border-radius: 20px; padding: 36px 32px;
+      max-width: 440px; width: 100%;
       box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+      max-height: 90vh; overflow-y: auto;
     }
-    .login-logo {
-      width: 56px; height: 56px; border-radius: 16px;
+    .card-logo {
+      width: 48px; height: 48px; border-radius: 14px;
       background: linear-gradient(135deg, var(--red), var(--red-dark));
       display: flex; align-items: center; justify-content: center;
-      font-size: 24px; margin-bottom: 24px;
-      box-shadow: 0 0 40px rgba(225,29,72,0.3);
+      font-size: 22px; margin-bottom: 20px;
+      box-shadow: 0 0 30px rgba(225,29,72,0.3);
     }
-    .login-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -0.03em; margin-bottom: 6px; }
-    .login-title span { color: var(--red); }
-    .login-sub { color: var(--muted); font-size: 14px; margin-bottom: 32px; line-height: 1.5; }
-    .login-field { margin-bottom: 16px; }
-    .login-field label { display: block; color: #888; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }
-    .login-input {
+    .card-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.02em; margin-bottom: 6px; }
+    .card-title span { color: var(--red); }
+    .card-sub { color: var(--muted); font-size: 13px; margin-bottom: 28px; line-height: 1.5; }
+
+    /* ── FORM ELEMENTS ── */
+    .field { margin-bottom: 16px; }
+    .field label { display: block; color: #888; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px; }
+    .inp {
       width: 100%; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 10px; padding: 13px 16px; color: var(--text); font-size: 15px;
+      border-radius: 10px; padding: 12px 14px; color: var(--text); font-size: 14px;
       font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.2s;
     }
-    .login-input:focus { border-color: rgba(225,29,72,0.4); }
-    .login-btn {
+    .inp:focus { border-color: rgba(225,29,72,0.4); }
+    textarea.inp { resize: none; min-height: 70px; }
+    .options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+    .opt {
+      padding: 11px 14px; border-radius: 10px; cursor: pointer;
+      border: 1px solid var(--border); background: var(--surface2);
+      color: #aaa; font-size: 13px; font-weight: 500;
+      transition: all 0.15s; text-align: left; font-family: 'DM Sans', sans-serif;
+    }
+    .opt:hover { border-color: rgba(225,29,72,0.3); color: var(--text); }
+    .opt.sel { border-color: var(--red); background: var(--red-glow); color: var(--text); }
+    .opt-row { display: flex; gap: 8px; margin-bottom: 16px; }
+    .opt-row .opt { flex: 1; text-align: center; }
+    .btn-primary {
       width: 100%; background: linear-gradient(135deg, var(--red), var(--red-dark));
-      border: none; border-radius: 10px; padding: 14px 0; color: #fff;
-      font-weight: 700; font-size: 15px; cursor: pointer;
-      font-family: 'DM Sans', sans-serif; margin-top: 8px;
-      box-shadow: 0 4px 20px rgba(225,29,72,0.3); transition: opacity 0.2s;
+      border: none; border-radius: 10px; padding: 13px 0; color: #fff;
+      font-weight: 700; font-size: 14px; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; box-shadow: 0 4px 20px rgba(225,29,72,0.3);
+      margin-top: 4px;
     }
-    .login-btn:hover { opacity: 0.9; }
-    .login-error {
-      background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
-      border-radius: 8px; padding: 10px 14px; color: #fca5a5;
-      font-size: 13px; margin-top: 12px; display: none;
+    .btn-secondary {
+      width: 100%; background: transparent; border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 0; color: var(--muted);
+      font-size: 14px; cursor: pointer; font-family: 'DM Sans', sans-serif; margin-top: 8px;
     }
-    .login-error.show { display: block; }
-    .login-footer { color: var(--sub); font-size: 12px; text-align: center; margin-top: 20px; }
+    .progress-dots { display: flex; gap: 6px; margin-bottom: 24px; }
+    .pdot { height: 3px; flex: 1; border-radius: 2px; background: var(--border); transition: background 0.3s; }
+    .pdot.done { background: var(--red); }
+    .err-box { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 10px 14px; color: #fca5a5; font-size: 13px; margin-top: 10px; display: none; }
+    .err-box.show { display: block; }
 
-    /* ── EXPIRED SCREEN ── */
-    #expired-screen {
-      position: fixed; inset: 0; z-index: 100;
-      display: none; align-items: center; justify-content: center;
-      padding: 24px; background: var(--bg);
+    /* ── HEADER ── */
+    #header {
+      display: none; flex-shrink: 0;
+      padding: 13px 16px; border-bottom: 1px solid var(--border);
+      background: var(--bg); z-index: 10;
+      align-items: center; gap: 10px;
     }
-    #expired-screen.show { display: flex; }
-    .expired-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 24px; padding: 48px 40px; max-width: 420px; width: 100%; text-align: center;
-    }
-    .expired-icon { font-size: 48px; margin-bottom: 20px; }
-    .expired-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; margin-bottom: 10px; }
-    .expired-sub { color: var(--muted); font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
-    .expired-contact {
-      background: var(--red-glow); border: 1px solid rgba(225,29,72,0.2);
-      border-radius: 10px; padding: 14px 16px; color: #aaa; font-size: 13px;
-    }
-    .expired-contact strong { color: var(--red); }
+    #header.show { display: flex; }
+    .h-logo { width: 32px; height: 32px; border-radius: 9px; background: linear-gradient(135deg, var(--red), var(--red-dark)); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+    .h-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 14px; }
+    .h-sub { color: var(--muted); font-size: 10px; }
+    #header-right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+    #trial-badge { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.25); border-radius: 20px; padding: 4px 10px; color: #fbbf24; font-size: 11px; font-weight: 600; display: none; }
+    .h-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 6px 11px; color: var(--muted); font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+
+    /* ── TABS ── */
+    #tabs { display: none; flex-shrink: 0; border-bottom: 1px solid var(--border); background: var(--bg); }
+    #tabs.show { display: flex; }
+    .tab { flex: 1; padding: 11px 0; text-align: center; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+    .tab.active { color: var(--red); border-bottom-color: var(--red); }
+
+    /* ── CHAT TAB ── */
+    #chat-tab { display: none; flex: 1; flex-direction: column; min-height: 0; }
+    #chat-tab.active { display: flex; }
+    #quick-starts { padding: 10px 14px 0; display: flex; gap: 6px; overflow-x: auto; flex-shrink: 0; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    #quick-starts::-webkit-scrollbar { display: none; }
+    .qs { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 7px 13px; color: #777; font-size: 12px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap; flex-shrink: 0; }
+    .qs:active { background: var(--red-glow); color: var(--text); }
+    #ctx-bar { display: none; flex-shrink: 0; margin: 8px 14px 0; background: var(--red-glow); border: 1px solid rgba(225,29,72,0.2); border-radius: 8px; padding: 8px 12px; font-size: 11px; color: #aaa; }
+    #ctx-bar.show { display: block; }
+    #ctx-bar span { color: var(--red); font-weight: 600; }
+    #messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; -webkit-overflow-scrolling: touch; }
+    .mrow { display: flex; gap: 8px; max-width: 100%; }
+    .mrow.user { justify-content: flex-end; }
+    .micon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; margin-top: 2px; }
+    .micon.ai { background: linear-gradient(135deg, var(--red), var(--red-dark)); }
+    .micon.hu { background: var(--surface2); border: 1px solid var(--border); color: #888; }
+    .mbubble { padding: 10px 13px; border-radius: 12px; font-size: 13px; line-height: 1.6; max-width: calc(100% - 36px); }
+    .mbubble.ai { background: var(--surface); border: 1px solid var(--border); border-radius: 4px 12px 12px 12px; }
+    .mbubble.user { background: linear-gradient(135deg, var(--red), var(--red-dark)); border-radius: 12px 4px 12px 12px; color: #fff; }
+    #typing-row { display: none; align-items: center; gap: 8px; padding: 0 14px; flex-shrink: 0; }
+    #typing-row.show { display: flex; }
+    .tbubble { background: var(--surface); border: 1px solid var(--border); border-radius: 4px 12px 12px 12px; padding: 11px 14px; display: flex; gap: 4px; }
+    .td { width: 5px; height: 5px; border-radius: 50%; background: var(--red); opacity: 0.3; animation: td 1.2s infinite; }
+    .td:nth-child(2) { animation-delay: 0.2s; }
+    .td:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes td { 0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-4px);opacity:1} }
+    #input-area { flex-shrink: 0; padding: 10px 14px 16px; border-top: 1px solid var(--border); background: var(--bg); }
+    #trial-limit-msg { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); border-radius: 8px; padding: 10px 12px; color: #fbbf24; font-size: 12px; margin-bottom: 8px; display: none; text-align: center; }
+    #irow { display: flex; gap: 8px; align-items: flex-end; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px 8px 8px 13px; }
+    #irow:focus-within { border-color: rgba(225,29,72,0.35); }
+    #msg-input { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-size: 14px; font-family: 'DM Sans', sans-serif; resize: none; line-height: 1.5; max-height: 100px; min-height: 24px; }
+    #msg-input::placeholder { color: var(--sub); }
+    #send-btn { width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0; background: linear-gradient(135deg, var(--red), var(--red-dark)); border: none; cursor: pointer; color: #fff; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+    #send-btn:disabled { opacity: 0.3; }
+
+    /* ── PLAN TAB ── */
+    #plan-tab { display: none; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    #plan-tab.active { display: block; }
+    #plan-empty { padding: 40px 20px; text-align: center; }
+    #plan-empty .pe-icon { font-size: 48px; margin-bottom: 16px; }
+    #plan-empty h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; margin-bottom: 8px; }
+    #plan-empty h3 span { color: var(--red); }
+    #plan-empty p { color: var(--muted); font-size: 13px; line-height: 1.6; margin-bottom: 24px; max-width: 280px; margin-left: auto; margin-right: auto; }
+    .gen-plan-btn { background: linear-gradient(135deg, var(--red), var(--red-dark)); border: none; border-radius: 12px; padding: 14px 28px; color: #fff; font-weight: 700; font-size: 14px; cursor: pointer; font-family: 'DM Sans', sans-serif; box-shadow: 0 4px 20px rgba(225,29,72,0.3); }
+    #plan-content { padding: 16px 14px; display: none; }
+    #plan-content.show { display: block; }
+
+    /* Plan switcher */
+    #plan-switcher { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .plan-tab-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap; flex-shrink: 0; }
+    .plan-tab-btn.active { background: var(--red-glow); border-color: var(--red); color: var(--red); }
+    .new-plan-btn { background: transparent; border: 1px dashed rgba(225,29,72,0.3); border-radius: 20px; padding: 6px 14px; color: var(--red); font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap; flex-shrink: 0; }
+
+    /* Plan header */
+    .plan-header { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+    .plan-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px; margin-bottom: 4px; }
+    .plan-meta { color: var(--muted); font-size: 12px; margin-bottom: 14px; }
+    .progress-bar-wrap { background: rgba(255,255,255,0.06); border-radius: 4px; height: 6px; margin-bottom: 6px; }
+    .progress-bar-fill { height: 6px; border-radius: 4px; background: linear-gradient(90deg, var(--red), var(--red-dark)); transition: width 0.4s; }
+    .progress-label { color: var(--muted); font-size: 11px; }
+
+    /* Phase */
+    .phase { margin-bottom: 18px; }
+    .phase-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; color: var(--red); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; padding: 8px 12px; background: var(--red-glow); border-radius: 8px; border-left: 3px solid var(--red); }
+    .task-item { display: flex; align-items: flex-start; gap: 10px; padding: 11px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 7px; cursor: pointer; transition: all 0.2s; }
+    .task-item:active { background: var(--surface2); }
+    .task-item.done { opacity: 0.55; }
+    .task-cb { width: 18px; height: 18px; border-radius: 5px; border: 2px solid var(--border); flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .task-item.done .task-cb { background: var(--red); border-color: var(--red); }
+    .task-cb-check { color: #fff; font-size: 10px; display: none; }
+    .task-item.done .task-cb-check { display: block; }
+    .task-text { font-size: 13px; line-height: 1.5; color: var(--text); }
+    .task-item.done .task-text { text-decoration: line-through; color: var(--muted); }
 
     /* ── ADMIN PANEL ── */
     #admin-panel {
       position: fixed; inset: 0; z-index: 90;
-      display: none; flex-direction: column;
-      background: var(--bg);
+      display: none; flex-direction: column; background: var(--bg);
     }
     #admin-panel.show { display: flex; }
-    .admin-header {
-      padding: 16px 24px; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: 12px;
-      background: rgba(12,12,15,0.95);
-    }
-    .admin-logo { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--red), var(--red-dark)); display: flex; align-items: center; justify-content: center; font-size: 17px; }
-    .admin-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; }
-    .admin-badge { background: rgba(225,29,72,0.15); border: 1px solid rgba(225,29,72,0.3); border-radius: 6px; padding: 3px 10px; color: var(--red); font-size: 11px; font-weight: 700; }
-    .admin-logout { margin-left: auto; background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 7px 14px; color: var(--muted); font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
-    .admin-body { flex: 1; overflow-y: auto; padding: 28px 24px; max-width: 700px; width: 100%; margin: 0 auto; }
-    .admin-section { margin-bottom: 36px; }
-    .admin-section h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; margin-bottom: 6px; }
-    .admin-section p { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
-    .gen-row { display: flex; gap: 10px; margin-bottom: 12px; }
-    .tier-select {
-      flex: 1; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 10px; padding: 11px 14px; color: var(--text);
-      font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none;
-    }
-    .tier-select option { background: var(--surface2); }
-    .gen-btn {
-      background: linear-gradient(135deg, var(--red), var(--red-dark));
-      border: none; border-radius: 10px; padding: 11px 20px;
-      color: #fff; font-weight: 700; font-size: 13px;
-      cursor: pointer; font-family: 'DM Sans', sans-serif;
-      white-space: nowrap;
-    }
-    .code-result {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 10px; padding: 14px 16px; display: none;
-      align-items: center; gap: 12px; margin-bottom: 20px;
-    }
+    .ap-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; background: var(--bg); flex-shrink: 0; }
+    .ap-logo { width: 32px; height: 32px; border-radius: 9px; background: linear-gradient(135deg, var(--red), var(--red-dark)); display: flex; align-items: center; justify-content: center; font-size: 15px; }
+    .ap-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 14px; }
+    .ap-badge { background: rgba(225,29,72,0.15); border: 1px solid rgba(225,29,72,0.3); border-radius: 5px; padding: 2px 8px; color: var(--red); font-size: 10px; font-weight: 700; }
+    .ap-body { flex: 1; overflow-y: auto; padding: 20px 16px; }
+    .ap-section { margin-bottom: 28px; }
+    .ap-section h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+    .ap-section p { color: var(--muted); font-size: 12px; margin-bottom: 14px; }
+    .gen-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    .tier-sel { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; color: var(--text); font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none; }
+    .tier-sel option { background: var(--surface2); }
+    .gen-btn { background: linear-gradient(135deg, var(--red), var(--red-dark)); border: none; border-radius: 10px; padding: 10px 16px; color: #fff; font-weight: 700; font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
+    .code-result { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; display: none; align-items: center; gap: 10px; margin-bottom: 16px; }
     .code-result.show { display: flex; }
-    .code-val { font-family: monospace; font-size: 15px; color: var(--red); font-weight: 700; flex: 1; }
-    .code-meta { color: var(--muted); font-size: 12px; }
-    .copy-code-btn {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 8px; padding: 7px 14px; color: var(--text);
-      font-size: 12px; font-weight: 600; cursor: pointer;
-      font-family: 'DM Sans', sans-serif; white-space: nowrap;
-    }
-    .codes-list { display: flex; flex-direction: column; gap: 8px; }
-    .code-item {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 10px; padding: 12px 16px;
-      display: flex; align-items: center; gap: 12px;
-    }
-    .code-item-val { font-family: monospace; font-size: 13px; color: #aaa; flex: 1; }
-    .code-tier { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 5px; }
-    .code-tier.paid { background: rgba(74,222,128,0.1); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
-    .code-tier.trial { background: rgba(251,191,36,0.1); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
-    .code-expiry { color: var(--muted); font-size: 12px; }
-    .code-expired-tag { color: #f87171; font-size: 11px; font-weight: 700; }
-    .delete-code-btn { background: transparent; border: none; color: var(--sub); font-size: 16px; cursor: pointer; padding: 2px 6px; }
-    .delete-code-btn:hover { color: #f87171; }
-    .no-codes { color: var(--sub); font-size: 13px; text-align: center; padding: 20px; }
-    .admin-enter-btn {
-      width: 100%; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 10px; padding: 13px 0; color: var(--text);
-      font-weight: 600; font-size: 14px; cursor: pointer;
-      font-family: 'DM Sans', sans-serif; transition: all 0.2s;
-    }
-    .admin-enter-btn:hover { border-color: rgba(225,29,72,0.3); }
+    .code-val { font-family: monospace; font-size: 14px; color: var(--red); font-weight: 700; flex: 1; }
+    .code-meta { color: var(--muted); font-size: 11px; }
+    .copy-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 7px; padding: 6px 12px; color: var(--text); font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+    .codes-list { display: flex; flex-direction: column; gap: 7px; }
+    .code-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; }
+    .ci-val { font-family: monospace; font-size: 12px; color: #aaa; flex: 1; }
+    .ci-tier { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; }
+    .ci-tier.paid { background: rgba(74,222,128,0.1); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
+    .ci-tier.trial { background: rgba(251,191,36,0.1); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+    .ci-exp { color: var(--muted); font-size: 11px; }
+    .ci-expired { color: #f87171; font-size: 10px; font-weight: 700; }
+    .ci-del { background: transparent; border: none; color: var(--sub); font-size: 14px; cursor: pointer; padding: 2px 5px; }
+    .ci-del:hover { color: #f87171; }
+    .no-codes { color: var(--sub); font-size: 12px; text-align: center; padding: 16px; }
+    .ap-enter-btn { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 0; color: var(--text); font-weight: 600; font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
 
-    /* ── ONBOARDING ── */
-    #onboarding { position: fixed; inset: 0; z-index: 50; background: rgba(12,12,15,0.97); display: flex; align-items: center; justify-content: center; padding: 24px; }
-    #onboarding.hidden { display: none; }
-    #onboarding-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 40px 36px; max-width: 480px; width: 100%; box-shadow: 0 40px 80px rgba(0,0,0,0.5); }
-    #ob-logo { width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, var(--red), var(--red-dark)); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 20px; box-shadow: 0 0 30px rgba(225,29,72,0.3); }
-    #ob-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -0.03em; margin-bottom: 6px; }
-    #ob-title span { color: var(--red); }
-    #ob-sub { color: var(--muted); font-size: 14px; margin-bottom: 32px; line-height: 1.5; }
-    .ob-step { display: none; }
-    .ob-step.active { display: block; }
-    .ob-question { color: var(--text); font-size: 15px; font-weight: 600; margin-bottom: 14px; font-family: 'Syne', sans-serif; }
-    .ob-question span { color: var(--red); }
-    .ob-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; color: var(--text); font-size: 15px; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.2s; margin-bottom: 16px; }
-    .ob-input:focus { border-color: rgba(225,29,72,0.4); }
-    .ob-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-    .ob-option { padding: 12px 16px; border-radius: 10px; cursor: pointer; border: 1px solid var(--border); background: var(--surface2); color: #aaa; font-size: 14px; font-weight: 500; transition: all 0.15s; text-align: left; font-family: 'DM Sans', sans-serif; }
-    .ob-option:hover { border-color: rgba(225,29,72,0.3); color: var(--text); }
-    .ob-option.selected { border-color: var(--red); background: var(--red-glow); color: var(--text); }
-    .ob-row { display: flex; gap: 10px; align-items: center; }
-    #ob-back { background: transparent; border: 1px solid var(--border); border-radius: 10px; padding: 12px 20px; color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
-    #ob-next { flex: 1; background: linear-gradient(135deg, var(--red), var(--red-dark)); border: none; border-radius: 10px; padding: 13px 0; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; box-shadow: 0 4px 20px rgba(225,29,72,0.3); }
-    .ob-progress { display: flex; gap: 6px; margin-bottom: 28px; }
-    .ob-dot { height: 3px; flex: 1; border-radius: 2px; background: var(--border); transition: background 0.3s; }
-    .ob-dot.done { background: var(--red); }
+    /* ── PLAN GENERATOR MODAL ── */
+    #plan-gen-modal { position: fixed; inset: 0; z-index: 80; background: rgba(12,12,15,0.95); display: none; align-items: center; justify-content: center; padding: 20px; }
+    #plan-gen-modal.show { display: flex; }
 
-    /* ── HEADER ── */
-    #header { position: sticky; top: 0; z-index: 20; padding: 14px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); background: rgba(12,12,15,0.95); backdrop-filter: blur(10px); }
-    #logo { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--red), var(--red-dark)); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; box-shadow: 0 0 20px rgba(225,29,72,0.3); }
-    #header-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; letter-spacing: -0.02em; }
-    #header-sub { color: var(--muted); font-size: 11px; }
-    #header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-    #trial-counter { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.25); border-radius: 20px; padding: 5px 12px; color: #fbbf24; font-size: 12px; font-weight: 600; display: none; }
-    #profile-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 7px 14px; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
-    #logout-btn { background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 7px 14px; color: var(--muted); font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
-
-    /* ── APP ── */
-    #app { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; }
-    #quick-starts { padding: 12px 16px 0; display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; flex-shrink: 0; -webkit-overflow-scrolling: touch; }
-    .qs-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 8px 16px; color: #888; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; white-space: nowrap; }
-    .qs-btn:hover { border-color: rgba(225,29,72,0.3); color: var(--text); background: var(--red-glow); }
-    #messages { flex: 1; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
-    .msg-row { display: flex; gap: 10px; max-width: 780px; }
-    .msg-row.user { margin-left: auto; flex-direction: row-reverse; }
-    .msg-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; margin-top: 2px; }
-    .msg-icon.advisor { background: linear-gradient(135deg, var(--red), var(--red-dark)); box-shadow: 0 0 12px rgba(225,29,72,0.25); }
-    .msg-icon.user-icon { background: var(--surface2); border: 1px solid var(--border); color: #888; }
-    .msg-bubble { padding: 12px 16px; border-radius: 14px; font-size: 14px; line-height: 1.65; max-width: calc(100% - 42px); }
-    .msg-bubble.advisor { background: var(--surface); border: 1px solid var(--border); border-radius: 4px 14px 14px 14px; color: var(--text); }
-    .msg-bubble.user { background: linear-gradient(135deg, var(--red), var(--red-dark)); border-radius: 14px 4px 14px 14px; color: #fff; box-shadow: 0 4px 16px rgba(225,29,72,0.25); }
-    #typing { display: none; align-items: center; gap: 10px; max-width: 780px; padding: 0 24px; }
-    #typing.show { display: flex; }
-    .typing-bubble { background: var(--surface); border: 1px solid var(--border); border-radius: 4px 14px 14px 14px; padding: 14px 18px; display: flex; gap: 5px; align-items: center; }
-    .t-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); opacity: 0.4; animation: tdot 1.2s infinite ease-in-out; }
-    .t-dot:nth-child(2) { animation-delay: 0.2s; }
-    .t-dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes tdot { 0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-5px);opacity:1} }
-    #context-bar { display: none; flex-shrink: 0; margin: 8px 16px 0; background: var(--red-glow); border: 1px solid rgba(225,29,72,0.2); border-radius: 10px; padding: 10px 14px; font-size: 12px; color: #aaa; align-items: center; gap: 8px; }
-    #context-bar.show { display: flex; }
-    #context-bar span { color: var(--red); font-weight: 600; }
-    #empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 24px; }
-    #empty-state.hidden { display: none; }
-    .es-icon { width: 64px; height: 64px; border-radius: 18px; background: linear-gradient(135deg, var(--red), var(--red-dark)); display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 20px; box-shadow: 0 0 40px rgba(225,29,72,0.2); }
-    .es-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.02em; margin-bottom: 8px; }
-    .es-title span { color: var(--red); }
-    .es-sub { color: var(--muted); font-size: 14px; line-height: 1.6; max-width: 320px; }
-    #input-area { padding: 12px 16px 20px; border-top: 1px solid var(--border); background: rgba(12,12,15,0.95); position: sticky; bottom: 0; z-index: 10; }
-    #input-row { display: flex; gap: 10px; align-items: flex-end; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 10px 10px 10px 16px; transition: border-color 0.2s; }
-    #input-row:focus-within { border-color: rgba(225,29,72,0.3); }
-    #msg-input { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-size: 14px; font-family: 'DM Sans', sans-serif; resize: none; max-height: 120px; line-height: 1.5; }
-    #msg-input::placeholder { color: var(--sub); }
-    #send-btn { width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0; background: linear-gradient(135deg, var(--red), var(--red-dark)); border: none; cursor: pointer; font-size: 15px; color: #fff; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 2px 10px rgba(225,29,72,0.3); }
-    #send-btn:disabled { opacity: 0.3; cursor: not-allowed; box-shadow: none; }
-    #input-hint { color: var(--sub); font-size: 11px; margin-top: 8px; text-align: center; }
-    #trial-limit-msg { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); border-radius: 10px; padding: 12px 16px; color: #fbbf24; font-size: 13px; margin-bottom: 10px; display: none; text-align: center; }
-
-    /* Profile modal */
-    #profile-modal { position: fixed; inset: 0; z-index: 40; background: rgba(12,12,15,0.9); display: none; align-items: center; justify-content: center; padding: 24px; }
-    #profile-modal.show { display: flex; }
-    #profile-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 32px; max-width: 420px; width: 100%; }
-    #profile-card h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; margin-bottom: 6px; }
-    #profile-card p { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
-    .profile-field { margin-bottom: 16px; }
-    .profile-field label { display: block; color: #888; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
-    .profile-field input, .profile-field select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none; }
-    .profile-field select option { background: var(--surface2); }
-    #profile-save { width: 100%; background: linear-gradient(135deg, var(--red), var(--red-dark)); border: none; border-radius: 10px; padding: 12px 0; color: #fff; font-weight: 700; font-size: 14px; cursor: pointer; font-family: 'DM Sans', sans-serif; margin-top: 8px; }
-    #profile-close { width: 100%; background: transparent; border: 1px solid var(--border); border-radius: 10px; padding: 11px 0; color: var(--muted); font-size: 14px; cursor: pointer; font-family: 'DM Sans', sans-serif; margin-top: 8px; }
+    /* ── EXPIRED ── */
+    #expired-screen { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px; background: var(--bg); }
+    #expired-screen.show { display: flex; }
+    .exp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 40px 32px; max-width: 380px; width: 100%; text-align: center; }
+    .exp-icon { font-size: 44px; margin-bottom: 16px; }
+    .exp-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; margin-bottom: 8px; }
+    .exp-sub { color: var(--muted); font-size: 13px; line-height: 1.6; margin-bottom: 20px; }
+    .exp-contact { background: var(--red-glow); border: 1px solid rgba(225,29,72,0.2); border-radius: 10px; padding: 12px 14px; color: #aaa; font-size: 12px; }
+    .exp-contact strong { color: var(--red); }
   </style>
 </head>
 <body>
 
-<!-- ── LOGIN SCREEN ── -->
-<div id="login-screen">
-  <div class="login-card">
-    <div class="login-logo">💎</div>
-    <div class="login-title">Ruby Wall <span>Advisor</span></div>
-    <div class="login-sub">Enter your access code or admin password to continue.</div>
-    <div class="login-field">
+<!-- LOGIN -->
+<div class="overlay" id="login-screen">
+  <div class="card">
+    <div class="card-logo">💎</div>
+    <div class="card-title">Ruby Wall <span>Advisor</span></div>
+    <div class="card-sub">Enter your password or invite code to access your AI business consultant.</div>
+    <div class="field">
       <label>Password or Invite Code</label>
-      <input class="login-input" id="login-input" type="password" placeholder="Enter your code..." onkeydown="if(event.key==='Enter')doLogin()" />
+      <input class="inp" id="login-input" type="password" placeholder="Enter your code..." onkeydown="if(event.key==='Enter')doLogin()" />
     </div>
-    <button class="login-btn" onclick="doLogin()">Access Advisor →</button>
-    <div class="login-error" id="login-error">Invalid code or password. Please try again.</div>
-    <div class="login-footer">Don't have a code? Contact Ruby Wall to get access.</div>
+    <button class="btn-primary" onclick="doLogin()">Access Advisor →</button>
+    <div class="err-box" id="login-err">Invalid code or password. Please try again.</div>
+    <p style="color:var(--sub);font-size:11px;text-align:center;margin-top:16px">Don't have a code? Contact Ruby Wall to get access.</p>
   </div>
 </div>
 
-<!-- ── EXPIRED SCREEN ── -->
+<!-- EXPIRED -->
 <div id="expired-screen">
-  <div class="expired-card">
-    <div class="expired-icon">⏰</div>
-    <div class="expired-title">Access Expired</div>
-    <div class="expired-sub">Your invite code has expired. Reach out to Ruby Wall to renew your access or upgrade to a paid plan.</div>
-    <div class="expired-contact">Contact <strong>Ruby Wall</strong> to get a new invite code and continue growing your business.</div>
+  <div class="exp-card">
+    <div class="exp-icon">⏰</div>
+    <div class="exp-title">Access Expired</div>
+    <div class="exp-sub">Your invite code has expired. Contact Ruby Wall to renew your access or upgrade to a paid plan.</div>
+    <div class="exp-contact">Contact <strong>Ruby Wall</strong> to get a new code and continue growing your business.</div>
   </div>
 </div>
 
-<!-- ── ADMIN PANEL ── -->
+<!-- ADMIN PANEL -->
 <div id="admin-panel">
-  <div class="admin-header">
-    <div class="admin-logo">💎</div>
-    <div>
-      <div class="admin-title">Ruby Wall Advisor</div>
+  <div class="ap-header">
+    <div class="ap-logo">💎</div>
+    <div><div class="ap-title">Ruby Wall Advisor</div></div>
+    <div class="ap-badge">ADMIN</div>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <button class="ap-enter-btn" style="width:auto;padding:6px 12px;font-size:11px" onclick="enterAdvisor()">Enter Advisor</button>
+      <button class="h-btn" onclick="doLogout()">Log Out</button>
     </div>
-    <div class="admin-badge">ADMIN</div>
-    <button class="admin-logout" onclick="doLogout()">Log Out</button>
   </div>
-  <div class="admin-body">
-    <div class="admin-section">
+  <div class="ap-body">
+    <div class="ap-section">
       <h3>Generate Invite Code</h3>
-      <p>Create a new code for a client. Codes expire 30 days from generation.</p>
+      <p>Codes expire 30 days from generation.</p>
       <div class="gen-row">
-        <select class="tier-select" id="tier-select">
+        <select class="tier-sel" id="tier-sel">
           <option value="paid">💳 Paid Client — Full Access</option>
           <option value="trial">🔓 Free Trial — 10 Messages</option>
         </select>
         <button class="gen-btn" onclick="generateCode()">Generate</button>
       </div>
       <div class="code-result" id="code-result">
-        <div>
+        <div style="flex:1">
           <div class="code-val" id="gen-code-val"></div>
           <div class="code-meta" id="gen-code-meta"></div>
         </div>
-        <button class="copy-code-btn" onclick="copyGenCode()">Copy</button>
+        <button class="copy-btn" onclick="copyCode()">Copy</button>
       </div>
     </div>
-
-    <div class="admin-section">
+    <div class="ap-section">
       <h3>Active Codes</h3>
-      <p>All generated invite codes and their status.</p>
+      <p>All generated invite codes.</p>
       <div class="codes-list" id="codes-list"></div>
     </div>
+  </div>
+</div>
 
-    <div class="admin-section">
-      <button class="admin-enter-btn" onclick="enterAdvisor()">→ Enter Business Advisor</button>
+<!-- ONBOARDING -->
+<div class="overlay hidden" id="onboarding">
+  <div class="card">
+    <div class="card-logo">💎</div>
+    <div class="card-title">Ruby Wall <span>Advisor</span></div>
+    <div class="card-sub">3 quick questions so I can give advice that fits your situation.</div>
+    <div class="progress-dots">
+      <div class="pdot done" id="pd0"></div>
+      <div class="pdot" id="pd1"></div>
+      <div class="pdot" id="pd2"></div>
+    </div>
+    <div id="ob0" style="display:block">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:12px"><span style="color:var(--red)">01 /</span> What type of business do you have?</div>
+      <input class="inp" id="ob-biz" placeholder="e.g. Auto Repair, Hair Salon, Landscaping..." style="margin-bottom:16px" />
+    </div>
+    <div id="ob1" style="display:none">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:12px"><span style="color:var(--red)">02 /</span> What's your biggest goal right now?</div>
+      <div class="options" id="ob-goals">
+        <button class="opt" data-val="Get more customers">🎯 Get more customers</button>
+        <button class="opt" data-val="Grow my online presence">📱 Grow my online presence</button>
+        <button class="opt" data-val="Increase revenue and pricing">💰 Increase revenue and pricing</button>
+        <button class="opt" data-val="Set up and launch my business">🚀 Set up and launch my business</button>
+      </div>
+    </div>
+    <div id="ob2" style="display:none">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:12px"><span style="color:var(--red)">03 /</span> How long have you been in business?</div>
+      <div class="options" id="ob-time">
+        <button class="opt" data-val="Just starting out">🌱 Just starting out</button>
+        <button class="opt" data-val="Less than 1 year">📅 Less than 1 year</button>
+        <button class="opt" data-val="1-3 years">📈 1–3 years</button>
+        <button class="opt" data-val="3+ years">🏆 3+ years</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn-secondary" id="ob-back" style="display:none;width:auto;padding:12px 18px;margin-top:0" onclick="obBack()">← Back</button>
+      <button class="btn-primary" id="ob-next" style="margin-top:0" onclick="obNext()">Continue →</button>
     </div>
   </div>
 </div>
 
-<!-- ── ONBOARDING ── -->
-<div id="onboarding" class="hidden">
-  <div id="onboarding-card">
-    <div id="ob-logo">💎</div>
-    <div id="ob-title">Ruby Wall <span>Advisor</span></div>
-    <div id="ob-sub">Your personal AI business consultant. Answer 3 quick questions so I can give you advice that actually fits your situation.</div>
-    <div class="ob-progress">
-      <div class="ob-dot done" id="dot-0"></div>
-      <div class="ob-dot" id="dot-1"></div>
-      <div class="ob-dot" id="dot-2"></div>
+<!-- PLAN GENERATOR MODAL -->
+<div id="plan-gen-modal">
+  <div class="card">
+    <div class="card-logo">📋</div>
+    <div class="card-title">Generate Your <span>Plan</span></div>
+    <div class="card-sub">Answer 2 questions and I'll build a personalized growth plan for your business.</div>
+    <div class="progress-dots">
+      <div class="pdot done" id="pgd0"></div>
+      <div class="pdot" id="pgd1"></div>
     </div>
-    <div class="ob-step active" id="step-0">
-      <div class="ob-question"><span>01 /</span> What type of business do you have?</div>
-      <input class="ob-input" id="biz-type-input" placeholder="e.g. Auto Repair Shop, Hair Salon, Landscaping..." />
+    <div id="pg0" style="display:block">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:12px"><span style="color:var(--red)">01 /</span> What specific area do you want to improve?</div>
+      <textarea class="inp" id="pg-focus" placeholder="e.g. I want to get more walk-in customers and grow my Google reviews..."></textarea>
     </div>
-    <div class="ob-step" id="step-1">
-      <div class="ob-question"><span>02 /</span> What's your biggest goal right now?</div>
-      <div class="ob-options">
-        <button class="ob-option" data-val="Get more customers">🎯 Get more customers</button>
-        <button class="ob-option" data-val="Grow my online presence">📱 Grow my online presence</button>
-        <button class="ob-option" data-val="Increase revenue and pricing">💰 Increase revenue and pricing</button>
-        <button class="ob-option" data-val="Set up and launch my business">🚀 Set up and launch my business</button>
+    <div id="pg1" style="display:none">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:12px"><span style="color:var(--red)">02 /</span> How long should your plan be?</div>
+      <div class="opt-row">
+        <button class="opt" data-val="30" id="dur30" onclick="selectDur('30')">📅 30 Days<br><span style="font-size:11px;color:var(--muted)">Focused sprint</span></button>
+        <button class="opt" data-val="90" id="dur90" onclick="selectDur('90')">🗓️ 90 Days<br><span style="font-size:11px;color:var(--muted)">Full transformation</span></button>
       </div>
     </div>
-    <div class="ob-step" id="step-2">
-      <div class="ob-question"><span>03 /</span> How long have you been in business?</div>
-      <div class="ob-options">
-        <button class="ob-option" data-val="Just starting out">🌱 Just starting out</button>
-        <button class="ob-option" data-val="Less than 1 year">📅 Less than 1 year</button>
-        <button class="ob-option" data-val="1-3 years">📈 1–3 years</button>
-        <button class="ob-option" data-val="3+ years">🏆 3+ years</button>
-      </div>
+    <div id="pg-generating" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:32px;margin-bottom:12px">⚡</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:6px">Building Your Plan...</div>
+      <div style="color:var(--muted);font-size:13px">Personalizing for your business. This takes about 10 seconds.</div>
     </div>
-    <div class="ob-row">
-      <button id="ob-back" style="display:none" onclick="obBack()">← Back</button>
-      <button id="ob-next" onclick="obNext()">Continue →</button>
+    <div style="display:flex;gap:8px;margin-top:4px" id="pg-btns">
+      <button class="btn-secondary" id="pg-back" style="display:none;width:auto;padding:12px 18px;margin-top:0" onclick="pgBack()">← Back</button>
+      <button class="btn-primary" id="pg-next" style="margin-top:0" onclick="pgNext()">Continue →</button>
+      <button class="btn-secondary" style="width:auto;padding:12px 18px;margin-top:0" onclick="closePlanModal()">Cancel</button>
     </div>
   </div>
 </div>
 
-<!-- ── PROFILE MODAL ── -->
-<div id="profile-modal">
-  <div id="profile-card">
-    <h3>Update Your Profile</h3>
-    <p>Change your business info to get better advice.</p>
-    <div class="profile-field"><label>Business Type</label><input id="p-biz-type" placeholder="e.g. Auto Repair Shop" /></div>
-    <div class="profile-field"><label>Biggest Goal</label>
-      <select id="p-goal">
+<!-- HEADER -->
+<div id="header">
+  <div class="h-logo">💎</div>
+  <div><div class="h-name">Ruby Wall Advisor</div><div class="h-sub">AI Business Consultant</div></div>
+  <div id="header-right">
+    <div id="trial-badge"></div>
+    <button class="h-btn" onclick="openProfile()">✏️ Profile</button>
+    <button class="h-btn" onclick="doLogout()">Out</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div id="tabs">
+  <div class="tab active" onclick="switchTab('chat')" id="tab-chat">💬 Advisor</div>
+  <div class="tab" onclick="switchTab('plan')" id="tab-plan">📋 My Plan</div>
+</div>
+
+<!-- CHAT TAB -->
+<div id="chat-tab" class="active">
+  <div id="quick-starts">
+    <button class="qs" onclick="qs(this)">📈 Get more customers</button>
+    <button class="qs" onclick="qs(this)">🌐 Do I need a website?</button>
+    <button class="qs" onclick="qs(this)">💡 Social media tips</button>
+    <button class="qs" onclick="qs(this)">💰 Pricing strategy</button>
+    <button class="qs" onclick="qs(this)">🚀 Set up my business</button>
+  </div>
+  <div id="ctx-bar"></div>
+  <div id="messages"></div>
+  <div id="typing-row"><div class="micon ai">💎</div><div class="tbubble"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>
+  <div id="input-area">
+    <div id="trial-limit-msg">You've used all 10 free messages. Contact Ruby Wall to upgrade.</div>
+    <div id="irow">
+      <textarea id="msg-input" placeholder="Ask your business advisor anything..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button id="send-btn" onclick="sendMsg()">➤</button>
+    </div>
+    <div style="color:var(--sub);font-size:10px;text-align:center;margin-top:6px">Powered by Ruby Wall AI · Private & Secure</div>
+  </div>
+</div>
+
+<!-- PLAN TAB -->
+<div id="plan-tab">
+  <div id="plan-empty">
+    <div class="pe-icon">📋</div>
+    <h3>Your <span>Growth Plan</span></h3>
+    <p>Generate a personalized 30 or 90-day action plan built specifically for your business. Check off tasks as you complete them.</p>
+    <button class="gen-plan-btn" onclick="openPlanModal()">⚡ Generate My Plan</button>
+  </div>
+  <div id="plan-content">
+    <div id="plan-switcher"></div>
+    <div id="plan-render"></div>
+    <div style="padding:0 0 20px;text-align:center">
+      <button class="gen-plan-btn" style="font-size:13px;padding:11px 22px" onclick="openPlanModal()">+ Generate New Plan</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="overlay hidden" id="profile-modal">
+  <div class="card">
+    <div class="card-title">Update <span>Profile</span></div>
+    <div class="card-sub">Change your info to get better advice.</div>
+    <div class="field"><label>Business Type</label><input class="inp" id="p-biz" /></div>
+    <div class="field"><label>Biggest Goal</label>
+      <select class="inp" id="p-goal">
         <option value="Get more customers">🎯 Get more customers</option>
         <option value="Grow my online presence">📱 Grow my online presence</option>
         <option value="Increase revenue and pricing">💰 Increase revenue and pricing</option>
         <option value="Set up and launch my business">🚀 Set up and launch my business</option>
       </select>
     </div>
-    <div class="profile-field"><label>Time in Business</label>
-      <select id="p-time">
+    <div class="field"><label>Time in Business</label>
+      <select class="inp" id="p-time">
         <option value="Just starting out">🌱 Just starting out</option>
         <option value="Less than 1 year">📅 Less than 1 year</option>
         <option value="1-3 years">📈 1–3 years</option>
         <option value="3+ years">🏆 3+ years</option>
       </select>
     </div>
-    <button id="profile-save" onclick="saveProfile()">Save & Update</button>
-    <button id="profile-close" onclick="closeProfile()">Cancel</button>
-  </div>
-</div>
-
-<!-- ── HEADER ── -->
-<div id="header" style="display:none">
-  <div id="logo">💎</div>
-  <div><div id="header-name">Ruby Wall Advisor</div><div id="header-sub">AI Business Consultant · Pillar 4</div></div>
-  <div id="header-right">
-    <div id="trial-counter"></div>
-    <button id="profile-btn" onclick="openProfile()">✏️ Profile</button>
-    <button id="logout-btn" onclick="doLogout()">Log Out</button>
-  </div>
-</div>
-
-<!-- ── APP ── -->
-<div id="app" style="display:none">
-  <div id="quick-starts">
-    <button class="qs-btn" onclick="quickStart(this)">📈 How do I get more customers?</button>
-    <button class="qs-btn" onclick="quickStart(this)">🌐 Do I need a website?</button>
-    <button class="qs-btn" onclick="quickStart(this)">💡 What should I post on social media?</button>
-    <button class="qs-btn" onclick="quickStart(this)">💰 How do I price my services?</button>
-    <button class="qs-btn" onclick="quickStart(this)">🚀 Help me set up my business</button>
-  </div>
-  <div id="context-bar">💼 Advising: <span id="ctx-biz"></span> · Goal: <span id="ctx-goal"></span></div>
-  <div id="empty-state">
-    <div class="es-icon">🧠</div>
-    <div class="es-title">Your <span>Business Advisor</span> is ready</div>
-    <div class="es-sub">Ask me anything — marketing, pricing, growth, setup. Built specifically to help local businesses like yours win.</div>
-  </div>
-  <div id="messages" style="display:none;flex-direction:column;gap:16px"></div>
-  <div id="typing"><div class="msg-icon advisor">💎</div><div class="typing-bubble"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>
-  <div id="input-area">
-    <div id="trial-limit-msg">You've used all 10 free trial messages. Contact Ruby Wall to upgrade for full access.</div>
-    <div id="input-row">
-      <textarea id="msg-input" placeholder="Ask your business advisor anything..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
-      <button id="send-btn" onclick="sendMessage()">➤</button>
-    </div>
-    <div id="input-hint">Powered by Ruby Wall AI · Your conversations are private</div>
+    <button class="btn-primary" onclick="saveProfile()">Save & Update</button>
+    <button class="btn-secondary" onclick="closeProfile()">Cancel</button>
   </div>
 </div>
 
 <script>
 const PROXY = 'https://rubywallapi.gideonmoffitt08.workers.dev/chat';
-const ADMIN_PASS = 'Einstein_Apollo';
-const TRIAL_LIMIT = 10;
+const ADMIN = 'Einstein_Apollo';
+const TRIAL_MAX = 10;
+const MAX_PLANS = 3;
 
-let profile = { bizType: '', goal: '', time: '' };
-let messages = [];
-let obStep = 0;
-let obData = { bizType: '', goal: '', time: '' };
+let profile = { biz: '', goal: '', time: '' };
+let msgs = [];
+let tier = null;
+let trialUsed = 0;
 let loading = false;
-let currentTier = null; // 'admin' | 'paid' | 'trial'
-let trialMsgsUsed = 0;
+let obStep = 0;
+let obData = { biz: '', goal: '', time: '' };
+let pgStep = 0;
+let pgDur = '';
+let activePlanIdx = 0;
 
-// ── CODE UTILITIES ────────────────────────────────────────────────────
-function generateRandomCode(prefix) {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = prefix + '-';
-  for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
+// ── CODES ─────────────────────────────────────────────────────────────
+function getCodes() { return JSON.parse(localStorage.getItem('rw-codes') || '[]'); }
+function saveCodes(c) { localStorage.setItem('rw-codes', JSON.stringify(c)); }
+function randCode(pfx) {
+  const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s = pfx + '-';
+  for (let i = 0; i < 8; i++) s += c[Math.floor(Math.random() * c.length)];
+  return s;
+}
+function validateCode(code) {
+  if (code === ADMIN) return { ok: true, tier: 'admin' };
+  const codes = getCodes();
+  const e = codes.find(c => c.code === code);
+  if (!e) return { ok: false };
+  if (Date.now() > e.expiry) return { ok: false, expired: true };
+  return { ok: true, tier: e.tier };
 }
 
-function getCodesDB() {
-  return JSON.parse(localStorage.getItem('rw-codes') || '[]');
-}
-
-function saveCodesDB(codes) {
-  localStorage.setItem('rw-codes', JSON.stringify(codes));
-}
-
-function isCodeValid(code) {
-  if (code === ADMIN_PASS) return { valid: true, tier: 'admin' };
-  const codes = getCodesDB();
-  const entry = codes.find(c => c.code === code);
-  if (!entry) return { valid: false };
-  const now = Date.now();
-  if (now > entry.expiry) return { valid: false, expired: true };
-  return { valid: true, tier: entry.tier };
-}
-
-// ── LOGIN ─────────────────────────────────────────────────────────────
+// ── AUTH ──────────────────────────────────────────────────────────────
 function doLogin() {
   const val = document.getElementById('login-input').value.trim();
-  const result = isCodeValid(val);
-  if (!result.valid) {
-    if (result.expired) {
-      document.getElementById('login-screen').classList.add('hidden');
-      document.getElementById('expired-screen').classList.add('show');
-      return;
-    }
-    document.getElementById('login-error').classList.add('show');
-    return;
+  const res = validateCode(val);
+  if (!res.ok) {
+    if (res.expired) { hide('login-screen'); show('expired-screen'); return; }
+    document.getElementById('login-err').classList.add('show'); return;
   }
-  document.getElementById('login-error').classList.remove('show');
-  document.getElementById('login-screen').classList.add('hidden');
-  currentTier = result.tier;
-  localStorage.setItem('rw-session', JSON.stringify({ tier: result.tier, code: val, ts: Date.now() }));
-
-  if (result.tier === 'admin') {
-    showAdminPanel();
-  } else {
-    startAdvisor();
-  }
+  document.getElementById('login-err').classList.remove('show');
+  hide('login-screen');
+  tier = res.tier;
+  if (res.tier !== 'admin') localStorage.setItem('rw-session', JSON.stringify({ tier: res.tier, code: val }));
+  if (res.tier === 'admin') showAdmin();
+  else startAdvisor();
 }
 
 function doLogout() {
   localStorage.removeItem('rw-session');
-  currentTier = null;
-  messages = [];
-  trialMsgsUsed = 0;
+  tier = null; msgs = []; trialUsed = 0;
   document.getElementById('login-input').value = '';
-  document.getElementById('login-screen').classList.remove('hidden');
+  hide('admin-panel'); hide('header'); hide('tabs'); hide('chat-tab'); hide('plan-tab');
   document.getElementById('admin-panel').classList.remove('show');
-  document.getElementById('header').style.display = 'none';
-  document.getElementById('app').style.display = 'none';
+  document.getElementById('header').classList.remove('show');
+  document.getElementById('tabs').classList.remove('show');
+  show('login-screen');
 }
 
 function checkSession() {
-  // Admin never auto-resumes — always require password
-  const saved = localStorage.getItem('rw-session');
-  if (!saved) return;
-  const sess = JSON.parse(saved);
-  // Re-validate code
-  const result = isCodeValid(sess.code);
-  if (!result.valid) { localStorage.removeItem('rw-session'); return; }
-  currentTier = result.tier;
-  document.getElementById('login-screen').classList.add('hidden');
-  if (result.tier === 'admin') { localStorage.removeItem('rw-session'); return; } // Admin must always log in manually
-  else startAdvisor();
+  try {
+    const s = JSON.parse(localStorage.getItem('rw-session') || '{}');
+    if (s.tier === 'admin') { localStorage.removeItem('rw-session'); return; }
+    if (!s.code) return;
+    const res = validateCode(s.code);
+    if (!res.ok) { localStorage.removeItem('rw-session'); return; }
+    tier = res.tier;
+    hide('login-screen');
+    startAdvisor();
+  } catch { localStorage.removeItem('rw-session'); }
 }
 
 // ── ADMIN ─────────────────────────────────────────────────────────────
-function showAdminPanel() {
+function showAdmin() {
   document.getElementById('admin-panel').classList.add('show');
-  renderCodesList();
+  renderCodes();
 }
-
 function generateCode() {
-  const tier = document.getElementById('tier-select').value;
-  const code = generateRandomCode(tier === 'paid' ? 'RWP' : 'RWT');
-  const expiry = Date.now() + (30 * 24 * 60 * 60 * 1000);
-  const codes = getCodesDB();
-  codes.push({ code, tier, expiry, created: Date.now() });
-  saveCodesDB(codes);
-
+  const t = document.getElementById('tier-sel').value;
+  const code = randCode(t === 'paid' ? 'RWP' : 'RWT');
+  const expiry = Date.now() + 30*24*60*60*1000;
+  const codes = getCodes();
+  codes.push({ code, tier: t, expiry, created: Date.now() });
+  saveCodes(codes);
   document.getElementById('gen-code-val').textContent = code;
-  document.getElementById('gen-code-meta').textContent =
-    `${tier === 'paid' ? 'Paid Client · Full Access' : 'Free Trial · 10 Messages'} · Expires ${new Date(expiry).toLocaleDateString()}`;
+  document.getElementById('gen-code-meta').textContent = `${t === 'paid' ? 'Full Access' : '10 Messages'} · Expires ${new Date(expiry).toLocaleDateString()}`;
   document.getElementById('code-result').classList.add('show');
-  renderCodesList();
+  renderCodes();
 }
-
-let lastGenCode = '';
-function copyGenCode() {
-  const code = document.getElementById('gen-code-val').textContent;
-  navigator.clipboard.writeText(code);
-  const btn = document.querySelector('.copy-code-btn');
-  btn.textContent = 'Copied!';
-  setTimeout(() => btn.textContent = 'Copy', 2000);
+function copyCode() {
+  navigator.clipboard.writeText(document.getElementById('gen-code-val').textContent);
+  const b = document.querySelector('.copy-btn'); b.textContent = 'Copied!';
+  setTimeout(() => b.textContent = 'Copy', 2000);
 }
-
-function renderCodesList() {
-  const codes = getCodesDB();
+function renderCodes() {
+  const codes = getCodes();
   const list = document.getElementById('codes-list');
-  if (codes.length === 0) {
-    list.innerHTML = '<div class="no-codes">No codes generated yet.</div>';
-    return;
-  }
+  if (!codes.length) { list.innerHTML = '<div class="no-codes">No codes yet.</div>'; return; }
   const now = Date.now();
   list.innerHTML = codes.map((c, i) => `
     <div class="code-item">
-      <div class="code-item-val">${c.code}</div>
-      <div class="code-tier ${c.tier}">${c.tier === 'paid' ? 'PAID' : 'TRIAL'}</div>
-      ${now > c.expiry
-        ? `<div class="code-expired-tag">EXPIRED</div>`
-        : `<div class="code-expiry">Exp. ${new Date(c.expiry).toLocaleDateString()}</div>`
-      }
-      <button class="delete-code-btn" onclick="deleteCode(${i})">✕</button>
-    </div>
-  `).join('');
+      <div class="ci-val">${c.code}</div>
+      <div class="ci-tier ${c.tier}">${c.tier.toUpperCase()}</div>
+      ${now > c.expiry ? '<div class="ci-expired">EXPIRED</div>' : `<div class="ci-exp">${new Date(c.expiry).toLocaleDateString()}</div>`}
+      <button class="ci-del" onclick="delCode(${i})">✕</button>
+    </div>`).join('');
 }
+function delCode(i) { const c = getCodes(); c.splice(i,1); saveCodes(c); renderCodes(); }
+function enterAdvisor() { document.getElementById('admin-panel').classList.remove('show'); startAdvisor(); }
 
-function deleteCode(i) {
-  const codes = getCodesDB();
-  codes.splice(i, 1);
-  saveCodesDB(codes);
-  renderCodesList();
-}
-
-function enterAdvisor() {
-  document.getElementById('admin-panel').classList.remove('show');
-  startAdvisor();
-}
-
-// ── ADVISOR ───────────────────────────────────────────────────────────
+// ── ADVISOR BOOT ──────────────────────────────────────────────────────
 function startAdvisor() {
-  document.getElementById('header').style.display = 'flex';
-  document.getElementById('app').style.display = 'flex';
-  document.getElementById('app').style.flexDirection = 'column';
+  document.getElementById('header').classList.add('show');
+  document.getElementById('tabs').classList.add('show');
+  document.getElementById('chat-tab').classList.add('active');
+  document.getElementById('plan-tab');
 
-  if (currentTier === 'trial') {
-    trialMsgsUsed = parseInt(localStorage.getItem('rw-trial-used') || '0');
-    updateTrialCounter();
+  if (tier === 'trial') {
+    trialUsed = parseInt(localStorage.getItem('rw-trial-used') || '0');
+    updateTrial();
   }
 
-  const savedProfile = localStorage.getItem('rw-advisor-profile');
-  if (savedProfile) {
-    profile = JSON.parse(savedProfile);
-    showContextBar();
+  const saved = localStorage.getItem('rw-profile');
+  if (saved) {
+    profile = JSON.parse(saved);
+    showCtx();
     sendWelcome();
+    renderPlanTab();
   } else {
     document.getElementById('onboarding').classList.remove('hidden');
-  }
-}
-
-function updateTrialCounter() {
-  const counter = document.getElementById('trial-counter');
-  if (currentTier !== 'trial') { counter.style.display = 'none'; return; }
-  const remaining = TRIAL_LIMIT - trialMsgsUsed;
-  counter.style.display = 'block';
-  counter.textContent = `${remaining} messages left`;
-  if (remaining <= 0) {
-    document.getElementById('msg-input').disabled = true;
-    document.getElementById('send-btn').disabled = true;
-    document.getElementById('trial-limit-msg').style.display = 'block';
   }
 }
 
 // ── ONBOARDING ────────────────────────────────────────────────────────
 function obNext() {
   if (obStep === 0) {
-    const val = document.getElementById('biz-type-input').value.trim();
-    if (!val) return;
-    obData.bizType = val;
+    const v = document.getElementById('ob-biz').value.trim();
+    if (!v) return; obData.biz = v;
   } else if (obStep === 1) {
-    const sel = document.querySelector('#step-1 .ob-option.selected');
-    if (!sel) return;
-    obData.goal = sel.dataset.val;
+    const s = document.querySelector('#ob-goals .sel');
+    if (!s) return; obData.goal = s.dataset.val;
   } else if (obStep === 2) {
-    const sel = document.querySelector('#step-2 .ob-option.selected');
-    if (!sel) return;
-    obData.time = sel.dataset.val;
-    profile = { bizType: obData.bizType, goal: obData.goal, time: obData.time };
-    localStorage.setItem('rw-advisor-profile', JSON.stringify(profile));
-    document.getElementById('onboarding').classList.add('hidden');
-    showContextBar();
-    sendWelcome();
+    const s = document.querySelector('#ob-time .sel');
+    if (!s) return; obData.time = s.dataset.val;
+    profile = { biz: obData.biz, goal: obData.goal, time: obData.time };
+    localStorage.setItem('rw-profile', JSON.stringify(profile));
+    hide('onboarding');
+    showCtx(); sendWelcome(); renderPlanTab();
     return;
   }
   obStep++;
-  document.querySelectorAll('.ob-step').forEach((s, i) => s.classList.toggle('active', i === obStep));
-  document.querySelectorAll('.ob-dot').forEach((d, i) => d.classList.toggle('done', i <= obStep));
+  ['ob0','ob1','ob2'].forEach((id,i) => document.getElementById(id).style.display = i===obStep?'block':'none');
+  ['pd0','pd1','pd2'].forEach((id,i) => document.getElementById(id).classList.toggle('done', i<=obStep));
   document.getElementById('ob-back').style.display = obStep > 0 ? 'block' : 'none';
   document.getElementById('ob-next').textContent = obStep === 2 ? 'Get Started →' : 'Continue →';
 }
-
 function obBack() {
   obStep--;
-  document.querySelectorAll('.ob-step').forEach((s, i) => s.classList.toggle('active', i === obStep));
-  document.querySelectorAll('.ob-dot').forEach((d, i) => d.classList.toggle('done', i <= obStep));
+  ['ob0','ob1','ob2'].forEach((id,i) => document.getElementById(id).style.display = i===obStep?'block':'none');
+  ['pd0','pd1','pd2'].forEach((id,i) => document.getElementById(id).classList.toggle('done', i<=obStep));
   document.getElementById('ob-back').style.display = obStep > 0 ? 'block' : 'none';
-  document.getElementById('ob-next').textContent = obStep === 2 ? 'Get Started →' : 'Continue →';
+  document.getElementById('ob-next').textContent = 'Continue →';
 }
-
-document.querySelectorAll('.ob-option').forEach(btn => {
-  btn.addEventListener('click', () => {
-    btn.closest('.ob-options').querySelectorAll('.ob-option').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-  });
+document.querySelectorAll('#ob-goals .opt, #ob-time .opt').forEach(b => {
+  b.addEventListener('click', () => { b.closest('.options').querySelectorAll('.opt').forEach(o=>o.classList.remove('sel')); b.classList.add('sel'); });
 });
 
 // ── CONTEXT BAR ───────────────────────────────────────────────────────
-function showContextBar() {
-  document.getElementById('ctx-biz').textContent = profile.bizType;
-  document.getElementById('ctx-goal').textContent = profile.goal;
-  document.getElementById('context-bar').classList.add('show');
+function showCtx() {
+  const bar = document.getElementById('ctx-bar');
+  bar.innerHTML = `💼 <span>${profile.biz}</span> · Goal: <span>${profile.goal}</span>`;
+  bar.classList.add('show');
 }
 
 // ── SYSTEM PROMPT ─────────────────────────────────────────────────────
-function buildSystemPrompt() {
-  return `You are the Ruby Wall Business Advisor — an expert AI consultant specializing in helping small and local businesses grow, market themselves, and succeed.
+function sysPrompt() {
+  return `You are the Ruby Wall Business Advisor — an expert AI consultant helping small and local businesses grow.
 
-You are advising a business owner with the following profile:
-- Business Type: ${profile.bizType}
-- Current Goal: ${profile.goal}
-- Time in Business: ${profile.time}
+Client Profile:
+- Business: ${profile.biz}
+- Goal: ${profile.goal}
+- Experience: ${profile.time}
 
-Your personality: Direct, practical, encouraging. You give real actionable advice — not generic tips. You speak like a trusted mentor who has helped hundreds of small businesses.
-
-Your expertise includes:
-- Local marketing and getting more customers
-- Social media strategy for small businesses
-- Website and online presence
-- Pricing strategy and revenue growth
-- Business setup (LLC, EIN, branding, licensing)
-- Google Business Profile and local SEO
-- Customer retention and referrals
-- Low-budget marketing tactics that actually work
-
-Rules:
-- Always tailor advice to their specific business type and goal
-- Give specific, actionable steps — not vague suggestions
-- Keep responses focused and scannable (use short paragraphs or bullet points when listing steps)
-- Be encouraging but honest
-- Ask follow-up questions when you need more context
-- Never give legal or financial advice — recommend professionals for those`;
+Be direct, practical, and encouraging. Give real actionable advice tailored to their specific business — not generic tips. Keep responses concise and scannable. Use short paragraphs or bullet points. Ask follow-up questions when needed. Never give legal or financial advice.`;
 }
 
 // ── CHAT ──────────────────────────────────────────────────────────────
-function showMessages() {
-  document.getElementById('empty-state').classList.add('hidden');
-  const msgs = document.getElementById('messages');
-  msgs.style.display = 'flex';
-}
-
-function addMessage(role, content) {
-  showMessages();
-  const msgs = document.getElementById('messages');
+function addMsg(role, text) {
+  const el = document.getElementById('messages');
   const row = document.createElement('div');
-  row.className = `msg-row ${role === 'user' ? 'user' : ''}`;
+  row.className = `mrow ${role === 'user' ? 'user' : ''}`;
   row.innerHTML = `
-    <div class="msg-icon ${role === 'advisor' ? 'advisor' : 'user-icon'}">${role === 'advisor' ? '💎' : '👤'}</div>
-    <div class="msg-bubble ${role === 'advisor' ? 'advisor' : 'user'}">${content.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</div>
-  `;
-  msgs.appendChild(row);
-  msgs.scrollTop = msgs.scrollHeight;
+    <div class="micon ${role === 'ai' ? 'ai' : 'hu'}">${role === 'ai' ? '💎' : '👤'}</div>
+    <div class="mbubble ${role === 'ai' ? 'ai' : 'user'}">${text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>`;
+  el.appendChild(row);
+  el.scrollTop = el.scrollHeight;
 }
 
-function setLoading(state) {
-  loading = state;
-  document.getElementById('typing').classList.toggle('show', state);
-  document.getElementById('send-btn').disabled = state;
-  const msgs = document.getElementById('messages');
-  if (msgs) msgs.scrollTop = msgs.scrollHeight;
+function setLoading(v) {
+  loading = v;
+  document.getElementById('typing-row').classList.toggle('show', v);
+  document.getElementById('send-btn').disabled = v;
+  const el = document.getElementById('messages');
+  el.scrollTop = el.scrollHeight;
 }
 
 async function sendWelcome() {
-  showMessages();
   setLoading(true);
   try {
-    const res = await fetch(PROXY, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5', max_tokens: 1000,
-        system: buildSystemPrompt(),
-        messages: [{ role: 'user', content: `Introduce yourself briefly and give me one specific quick win for my ${profile.bizType} business focused on my goal to ${profile.goal}. Keep it short and punchy.` }]
-      })
-    });
-    const data = JSON.parse(await res.text());
-    const reply = data.content?.[0]?.text || "Hey! I'm your Ruby Wall Business Advisor. Ask me anything about growing your business.";
-    addMessage('advisor', reply);
-    messages.push({ role: 'assistant', content: reply });
-  } catch {
-    addMessage('advisor', "Hey! I'm your Ruby Wall Business Advisor. What's on your mind?");
-  }
+    const res = await fetch(PROXY, { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:600, system: sysPrompt(),
+        messages:[{ role:'user', content:`Introduce yourself briefly and give one specific quick win for my ${profile.biz} business focused on: ${profile.goal}. Keep it punchy and under 80 words.`}]})});
+    const d = JSON.parse(await res.text());
+    const reply = d.content?.[0]?.text || "Hey! I'm your Ruby Wall Business Advisor. Ask me anything about growing your business.";
+    addMsg('ai', reply); msgs.push({ role:'assistant', content:reply });
+  } catch { addMsg('ai', "Hey! I'm your Ruby Wall Advisor. Ask me anything about growing your business."); }
   setLoading(false);
 }
 
-async function sendMessage() {
-  if (currentTier === 'trial' && trialMsgsUsed >= TRIAL_LIMIT) return;
-  const input = document.getElementById('msg-input');
-  const txt = input.value.trim();
+async function sendMsg() {
+  if (tier === 'trial' && trialUsed >= TRIAL_MAX) return;
+  const inp = document.getElementById('msg-input');
+  const txt = inp.value.trim();
   if (!txt || loading) return;
-
-  showMessages();
-  addMessage('user', txt);
-  messages.push({ role: 'user', content: txt });
-  input.value = '';
-  input.style.height = 'auto';
+  addMsg('user', txt); msgs.push({ role:'user', content:txt });
+  inp.value = ''; inp.style.height = 'auto';
   setLoading(true);
-
-  if (currentTier === 'trial') {
-    trialMsgsUsed++;
-    localStorage.setItem('rw-trial-used', trialMsgsUsed);
-    updateTrialCounter();
-  }
-
+  if (tier === 'trial') { trialUsed++; localStorage.setItem('rw-trial-used', trialUsed); updateTrial(); }
   try {
-    const res = await fetch(PROXY, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 1000, system: buildSystemPrompt(), messages })
-    });
-    const data = JSON.parse(await res.text());
-    const reply = data.content?.[0]?.text || 'I had trouble responding. Please try again.';
-    addMessage('advisor', reply);
-    messages.push({ role: 'assistant', content: reply });
-  } catch {
-    addMessage('advisor', 'Connection error. Please try again.');
-  }
+    const res = await fetch(PROXY, { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:800, system: sysPrompt(), messages: msgs })});
+    const d = JSON.parse(await res.text());
+    const reply = d.content?.[0]?.text || 'I had trouble responding. Please try again.';
+    addMsg('ai', reply); msgs.push({ role:'assistant', content:reply });
+  } catch { addMsg('ai', 'Connection error. Please try again.'); }
   setLoading(false);
 }
 
-function quickStart(btn) {
-  document.getElementById('msg-input').value = btn.textContent.slice(2).trim();
-  sendMessage();
+function qs(btn) { document.getElementById('msg-input').value = btn.textContent.slice(2).trim(); sendMsg(); }
+function handleKey(e) { if (e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} }
+function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,100)+'px'; }
+function updateTrial() {
+  const rem = TRIAL_MAX - trialUsed;
+  document.getElementById('trial-badge').style.display = 'block';
+  document.getElementById('trial-badge').textContent = `${rem} msgs left`;
+  if (rem <= 0) {
+    document.getElementById('msg-input').disabled = true;
+    document.getElementById('send-btn').disabled = true;
+    document.getElementById('trial-limit-msg').style.display = 'block';
+  }
 }
 
-function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+// ── TABS ──────────────────────────────────────────────────────────────
+function switchTab(t) {
+  document.getElementById('chat-tab').classList.toggle('active', t==='chat');
+  document.getElementById('plan-tab').classList.toggle('active', t==='plan');
+  document.getElementById('tab-chat').classList.toggle('active', t==='chat');
+  document.getElementById('tab-plan').classList.toggle('active', t==='plan');
 }
 
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+// ── PLAN GENERATOR ────────────────────────────────────────────────────
+function openPlanModal() {
+  const plans = getPlans();
+  if (plans.length >= MAX_PLANS) {
+    alert(`You can save up to ${MAX_PLANS} plans. Delete one to generate a new one.`); return;
+  }
+  pgStep = 0; pgDur = '';
+  document.getElementById('pg0').style.display = 'block';
+  document.getElementById('pg1').style.display = 'none';
+  document.getElementById('pg-generating').style.display = 'none';
+  document.getElementById('pg-btns').style.display = 'flex';
+  document.getElementById('pg-focus').value = '';
+  document.getElementById('pgd0').classList.add('done');
+  document.getElementById('pgd1').classList.remove('done');
+  document.getElementById('pg-back').style.display = 'none';
+  document.getElementById('pg-next').textContent = 'Continue →';
+  document.getElementById('plan-gen-modal').classList.add('show');
+}
+function closePlanModal() { document.getElementById('plan-gen-modal').classList.remove('show'); }
+function selectDur(v) {
+  pgDur = v;
+  document.querySelectorAll('.opt-row .opt').forEach(b => b.classList.toggle('sel', b.dataset.val===v));
+}
+function pgBack() {
+  pgStep = 0;
+  document.getElementById('pg0').style.display = 'block';
+  document.getElementById('pg1').style.display = 'none';
+  document.getElementById('pg-back').style.display = 'none';
+  document.getElementById('pgd1').classList.remove('done');
+  document.getElementById('pg-next').textContent = 'Continue →';
+}
+async function pgNext() {
+  if (pgStep === 0) {
+    const v = document.getElementById('pg-focus').value.trim();
+    if (!v) return;
+    pgStep = 1;
+    document.getElementById('pg0').style.display = 'none';
+    document.getElementById('pg1').style.display = 'block';
+    document.getElementById('pg-back').style.display = 'block';
+    document.getElementById('pgd1').classList.add('done');
+    document.getElementById('pg-next').textContent = 'Generate Plan ⚡';
+    return;
+  }
+  if (!pgDur) { alert('Please select 30 or 90 days.'); return; }
+  // Generate
+  document.getElementById('pg0').style.display = 'none';
+  document.getElementById('pg1').style.display = 'none';
+  document.getElementById('pg-generating').style.display = 'block';
+  document.getElementById('pg-btns').style.display = 'none';
+
+  const focus = document.getElementById('pg-focus').value.trim();
+  const days = pgDur;
+  const phases = days === '30' ? 3 : 3;
+  const phaseLabels = days === '30'
+    ? ['Week 1–2: Foundation', 'Week 2–3: Action', 'Week 3–4: Results']
+    : ['Days 1–30: Foundation', 'Days 31–60: Growth', 'Days 61–90: Scale'];
+
+  const prompt = `Create a ${days}-day business growth plan for a ${profile.biz} business.
+Focus area: ${focus}
+Business goal: ${profile.goal}
+Experience level: ${profile.time}
+
+Structure the plan into exactly 3 phases:
+${phaseLabels.map((p,i) => `Phase ${i+1}: ${p}`).join('\n')}
+
+For each phase provide exactly 4-5 specific, actionable tasks tailored to this exact business type.
+Tasks should be concrete steps, not vague advice.
+
+Respond ONLY in this exact JSON format (no other text):
+{
+  "title": "Short plan title",
+  "phases": [
+    {
+      "label": "Phase label",
+      "tasks": ["Task 1", "Task 2", "Task 3", "Task 4"]
+    }
+  ]
+}`;
+
+  try {
+    const res = await fetch(PROXY, { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:1000,
+        messages:[{ role:'user', content:prompt }]})});
+    const d = JSON.parse(await res.text());
+    let raw = d.content?.[0]?.text || '';
+    raw = raw.replace(/```json|```/g,'').trim();
+    const plan = JSON.parse(raw);
+    plan.days = days;
+    plan.focus = focus;
+    plan.created = Date.now();
+    plan.checks = {};
+    savePlan(plan);
+    closePlanModal();
+    renderPlanTab();
+    switchTab('plan');
+  } catch(e) {
+    closePlanModal();
+    alert('Failed to generate plan. Please try again.');
+  }
 }
 
-// Scroll input into view on mobile when keyboard opens
-document.getElementById('msg-input') && document.getElementById('msg-input').addEventListener('focus', function() {
-  setTimeout(() => { this.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
-});
+// ── PLAN STORAGE ──────────────────────────────────────────────────────
+function getPlans() { return JSON.parse(localStorage.getItem('rw-plans') || '[]'); }
+function savePlanDB(plans) { localStorage.setItem('rw-plans', JSON.stringify(plans)); }
+function savePlan(plan) {
+  const plans = getPlans();
+  plans.push(plan);
+  savePlanDB(plans);
+  activePlanIdx = plans.length - 1;
+}
+function toggleTask(planIdx, phaseIdx, taskIdx) {
+  const plans = getPlans();
+  const key = `${phaseIdx}-${taskIdx}`;
+  plans[planIdx].checks = plans[planIdx].checks || {};
+  plans[planIdx].checks[key] = !plans[planIdx].checks[key];
+  savePlanDB(plans);
+  renderPlanContent(plans, planIdx);
+  renderProgress(plans, planIdx);
+}
+function deletePlan(i) {
+  if (!confirm('Delete this plan?')) return;
+  const plans = getPlans();
+  plans.splice(i, 1);
+  savePlanDB(plans);
+  activePlanIdx = Math.max(0, i-1);
+  renderPlanTab();
+}
+
+// ── PLAN RENDER ───────────────────────────────────────────────────────
+function renderPlanTab() {
+  const plans = getPlans();
+  if (!plans.length) {
+    document.getElementById('plan-empty').style.display = 'block';
+    document.getElementById('plan-content').classList.remove('show');
+    return;
+  }
+  document.getElementById('plan-empty').style.display = 'none';
+  document.getElementById('plan-content').classList.add('show');
+  if (activePlanIdx >= plans.length) activePlanIdx = plans.length - 1;
+
+  // Switcher
+  const sw = document.getElementById('plan-switcher');
+  sw.innerHTML = plans.map((p,i) => `
+    <button class="plan-tab-btn ${i===activePlanIdx?'active':''}" onclick="switchPlan(${i})">
+      ${p.days === '30' ? '📅' : '🗓️'} Plan ${i+1}
+    </button>`).join('') +
+    (plans.length < MAX_PLANS ? `<button class="new-plan-btn" onclick="openPlanModal()">+ New</button>` : '');
+
+  renderPlanContent(plans, activePlanIdx);
+}
+
+function switchPlan(i) {
+  activePlanIdx = i;
+  renderPlanTab();
+}
+
+function renderPlanContent(plans, idx) {
+  const p = plans[idx];
+  const checks = p.checks || {};
+  const totalTasks = p.phases.reduce((a,ph) => a + ph.tasks.length, 0);
+  const doneTasks = Object.values(checks).filter(Boolean).length;
+  const pct = totalTasks ? Math.round((doneTasks/totalTasks)*100) : 0;
+
+  document.getElementById('plan-render').innerHTML = `
+    <div class="plan-header">
+      <div class="plan-title">${p.title}</div>
+      <div class="plan-meta">${p.days}-Day Plan · Created ${new Date(p.created).toLocaleDateString()} · Focus: ${p.focus.slice(0,60)}${p.focus.length>60?'...':''}</div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+      <div class="progress-label">${doneTasks} of ${totalTasks} tasks complete · ${pct}%</div>
+      <button onclick="deletePlan(${idx})" style="margin-top:10px;background:transparent;border:1px solid rgba(239,68,68,0.2);border-radius:6px;padding:5px 10px;color:#f87171;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif">🗑 Delete Plan</button>
+    </div>
+    ${p.phases.map((ph, pi) => `
+      <div class="phase">
+        <div class="phase-title">${ph.label}</div>
+        ${ph.tasks.map((task, ti) => {
+          const key = `${pi}-${ti}`;
+          const done = checks[key] || false;
+          return `<div class="task-item ${done?'done':''}" onclick="toggleTask(${idx},${pi},${ti})">
+            <div class="task-cb"><span class="task-cb-check">✓</span></div>
+            <div class="task-text">${task}</div>
+          </div>`;
+        }).join('')}
+      </div>`).join('')}`;
+}
+
+function renderProgress(plans, idx) {
+  const p = plans[idx];
+  const checks = p.checks || {};
+  const totalTasks = p.phases.reduce((a,ph) => a + ph.tasks.length, 0);
+  const doneTasks = Object.values(checks).filter(Boolean).length;
+  const pct = totalTasks ? Math.round((doneTasks/totalTasks)*100) : 0;
+  const fill = document.querySelector('.progress-bar-fill');
+  const label = document.querySelector('.progress-label');
+  if (fill) fill.style.width = pct + '%';
+  if (label) label.textContent = `${doneTasks} of ${totalTasks} tasks complete · ${pct}%`;
+}
 
 // ── PROFILE ───────────────────────────────────────────────────────────
 function openProfile() {
-  document.getElementById('p-biz-type').value = profile.bizType;
+  document.getElementById('p-biz').value = profile.biz;
   document.getElementById('p-goal').value = profile.goal;
   document.getElementById('p-time').value = profile.time;
-  document.getElementById('profile-modal').classList.add('show');
+  document.getElementById('profile-modal').classList.remove('hidden');
 }
-
-function closeProfile() { document.getElementById('profile-modal').classList.remove('show'); }
-
+function closeProfile() { document.getElementById('profile-modal').classList.add('hidden'); }
 function saveProfile() {
-  profile.bizType = document.getElementById('p-biz-type').value.trim() || profile.bizType;
+  profile.biz = document.getElementById('p-biz').value.trim() || profile.biz;
   profile.goal = document.getElementById('p-goal').value;
   profile.time = document.getElementById('p-time').value;
-  localStorage.setItem('rw-advisor-profile', JSON.stringify(profile));
-  showContextBar();
-  closeProfile();
-  messages = [];
-  document.getElementById('messages').innerHTML = '';
-  document.getElementById('empty-state').classList.remove('hidden');
-  document.getElementById('messages').style.display = 'none';
+  localStorage.setItem('rw-profile', JSON.stringify(profile));
+  showCtx(); closeProfile();
+  msgs = []; document.getElementById('messages').innerHTML = '';
   sendWelcome();
 }
 
+// ── HELPERS ───────────────────────────────────────────────────────────
+function hide(id) { document.getElementById(id).classList.add('hidden'); }
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+
 // ── BOOT ──────────────────────────────────────────────────────────────
-// Always clear admin sessions on page load - admin must always log in fresh
-try { const _s = JSON.parse(localStorage.getItem("rw-session")||"{}"); if (_s.tier === "admin") localStorage.removeItem("rw-session"); } catch(e) { localStorage.removeItem("rw-session"); }
+try {
+  const s = JSON.parse(localStorage.getItem('rw-session') || '{}');
+  if (s.tier === 'admin') localStorage.removeItem('rw-session');
+} catch { localStorage.removeItem('rw-session'); }
 checkSession();
 </script>
 </body>
