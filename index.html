@@ -481,6 +481,7 @@
       <div id="chat-tab">
         <div id="qs-row">
           <button class="qs" style="background:rgba(74,222,128,0.08);border-color:rgba(74,222,128,0.2);color:#4ade80;font-weight:700" onclick="openLog()">✅ Log Progress</button>
+          <button class="qs" id="extract-btn" onclick="extractActionItems()" style="background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.25);color:#fbbf24;font-weight:700">⚡ Save Action Items</button>
           <button class="qs" onclick="qs(this)">📈 Get more customers</button>
           <button class="qs" onclick="qs(this)">🌐 Need a website?</button>
           <button class="qs" onclick="qs(this)">💡 Social media tips</button>
@@ -498,9 +499,7 @@
             <textarea id="msg-input" placeholder="Ask your business advisor anything..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
             <button id="send-btn" onclick="sendMsg()">➤</button>
           </div>
-          <div style="display:flex;justify-content:flex-end;margin-top:6px">
-            <button id="extract-btn" onclick="extractActionItems()" style="display:none;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);border-radius:7px;padding:5px 11px;color:#fbbf24;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">⚡ Save Action Items</button>
-          </div>
+
           <div style="color:var(--sub);font-size:10px;text-align:center;margin-top:5px">Ruby Wall AI · Private & Secure</div>
         </div>
       </div>
@@ -1291,12 +1290,6 @@ function clearDoneItems() {
   const items = getActionItems().filter(item => !item.done);
   saveActionItemsDB(items);
   renderActionItems();
-}
-
-// Show extract button after each AI response
-function showExtractBtn() {
-  const btn = document.getElementById('extract-btn');
-  if (btn) btn.style.display = 'block';
 }
 
 async function extractActionItems() {
