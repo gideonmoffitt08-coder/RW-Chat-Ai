@@ -1064,21 +1064,23 @@ ${mem ? 'What you know about them: ' + mem : ''}
 Plan progress: ${progressSummary}
 
 Search the web for the latest news and market conditions relevant to their business.
-Then provide a structured briefing in this EXACT format with these EXACT section headers:
+After searching, provide your briefing using EXACTLY these markers (copy them exactly):
 
 ##NEWS##
-[2-3 sentences about the latest news relevant to ${profile.biz} businesses]
+Write 2-3 sentences about the latest news for ${profile.biz} businesses here.
 
 ##MARKET##
-[2-3 sentences about current market conditions, trends, or economic factors affecting ${profile.biz} businesses]
+Write 2-3 sentences about current market conditions for ${profile.biz} businesses here.
 
 ##PROGRESS##
-[1-2 sentences acknowledging their progress and what it means for their business]
+Write 1-2 sentences acknowledging their plan progress here.
 
 ##FOCUS##
-[3 specific action items for this week based on their goal and progress, as a numbered list]
+1. First action item
+2. Second action item
+3. Third action item
 
-Be specific, current, and actionable. Use the web search results to make the news and market sections accurate.`;
+Use ONLY these exact markers. Do not use any other headers or formatting outside the sections.`;
 
   try {
     const res = await fetch(BRIEFING_URL, {
