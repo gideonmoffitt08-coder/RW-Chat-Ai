@@ -1337,27 +1337,30 @@ async function pgNext(){
   const phaseLabels=days==='30'
     ?['Week 1–2: Foundation','Week 2–3: Action','Week 3–4: Results']
     :['Days 1–30: Foundation','Days 31–60: Growth','Days 61–90: Scale'];
-  const prompt=`Create a ${days}-day business growth plan for a ${profile.biz} business.
-Focus: ${focus}
-Goal: ${profile.goal}
-Experience: ${profile.time}
-
-3 phases: ${phaseLabels.join(' | ')}
-
-Each phase: 4 specific actionable tasks for this exact business type.
-
-Respond ONLY in JSON (no other text):
-{"title":"Short plan title","phases":[{"label":"Phase label","tasks":["Task 1","Task 2","Task 3","Task 4"]}]}`;
+  const prompt='Create a '+days+'-day business growth plan for a '+profile.biz+' business. Focus: '+focus+'. Goal: '+profile.goal+'. Experience: '+profile.time+'. Phases: '+phaseLabels.join(', ')+'. Each phase needs exactly 4 specific actionable tasks. Respond with ONLY a JSON object, no explanation, no markdown. Format: {"title":"Plan Title","phases":[{"label":"Phase Label","tasks":["Task 1","Task 2","Task 3","Task 4"]}]}';
   try{
     const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
-    const d=JSON.parse(await res.text());
+    const raw_text=await res.text();
+    const d=JSON.parse(raw_text);
     let raw=d.content?.[0]?.text||'';
-    raw=raw.replace(/```json|```/g,'').trim();
+    // Strip markdown code blocks
+    raw=raw.replace(/```json/g,'').replace(/```/g,'').trim();
+    // Find JSON object in response
+    const jsonStart=raw.indexOf('{');
+    const jsonEnd=raw.lastIndexOf('}');
+    if(jsonStart===-1||jsonEnd===-1) throw new Error('No JSON found');
+    raw=raw.slice(jsonStart,jsonEnd+1);
     const plan=JSON.parse(raw);
+    // Validate structure
+    if(!plan.title||!plan.phases||!Array.isArray(plan.phases)) throw new Error('Invalid plan structure');
     plan.days=days;plan.focus=focus;plan.created=Date.now();plan.checks={};
     savePlan(plan);closePG();renderPlanTab();switchTab('plan');
-  }catch{closePG();alert('Failed to generate plan. Please try again.')}
+  }catch(e){
+    console.log('Plan error:',e);
+    closePG();
+    alert('Failed to generate plan. Please try again.');
+  }
 }
 
 // PLAN STORAGE
