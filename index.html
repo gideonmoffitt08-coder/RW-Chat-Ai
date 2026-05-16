@@ -54,10 +54,7 @@
     #mem-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;box-shadow:0 0 5px #4ade80;display:none}
     #mem-dot.active{display:block}
 
-    /* TABS */
-    #tabs{flex-shrink:0;display:flex;border-bottom:1px solid var(--border);background:var(--bg)}
-    .tab{flex:1;padding:9px 0;text-align:center;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;font-family:'DM Sans',sans-serif}
-    .tab.active{color:var(--red);border-bottom-color:var(--red)}
+
 
     /* BODY */
     #body{flex:1;min-height:0;display:flex;position:relative}
@@ -238,6 +235,50 @@
     .log-hdr{display:flex;align-items:center;gap:8px;margin-bottom:14px}
     .log-hdr h3{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;flex:1}
     .log-close{background:var(--s2);border:1px solid var(--border);border-radius:7px;padding:5px 10px;color:var(--muted);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+    /* BOTTOM NAV */
+    #bottom-nav{flex-shrink:0;display:none;border-top:1px solid var(--border);background:var(--bg);padding:0 0 env(safe-area-inset-bottom,0)}
+    #bottom-nav.show{display:flex}
+    .bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 0 8px;cursor:pointer;transition:all 0.15s;border:none;background:transparent;font-family:'DM Sans',sans-serif}
+    .bnav-icon{font-size:20px;margin-bottom:2px;transition:transform 0.15s}
+    .bnav-label{font-size:10px;font-weight:600;color:var(--muted);transition:color 0.15s}
+    .bnav-item.active .bnav-label{color:var(--red)}
+    .bnav-item.active .bnav-icon{transform:scale(1.1)}
+    .bnav-dot{width:5px;height:5px;border-radius:50%;background:var(--red);position:absolute;top:6px;right:calc(50% - 14px);display:none}
+    .bnav-dot.show{display:block}
+
+    /* SETTINGS TAB */
+    #settings-tab{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;padding:16px 14px}
+    #settings-tab.active-tab{display:block}
+    .settings-section{margin-bottom:22px}
+    .settings-section-title{font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px}
+    .settings-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+    .settings-row{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s}
+    .settings-row:last-child{border-bottom:none}
+    .settings-row:active{background:var(--s2)}
+    .settings-row-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+    .settings-row-text{flex:1}
+    .settings-row-title{font-size:14px;font-weight:600;color:var(--text)}
+    .settings-row-sub{font-size:11px;color:var(--muted);margin-top:1px}
+    .settings-row-arrow{color:var(--sub);font-size:12px}
+    .settings-profile-card{background:linear-gradient(135deg,var(--red),var(--rdk));border-radius:14px;padding:18px 16px;margin-bottom:20px;display:flex;align-items:center;gap:13px}
+    .sp-avatar{width:48px;height:48px;border-radius:13px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+    .sp-name{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:#fff}
+    .sp-goal{font-size:12px;color:rgba(255,255,255,0.75);margin-top:2px}
+    .sp-tier{background:rgba(255,255,255,0.2);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:#fff;margin-top:6px;display:inline-block}
+
+    /* EMPTY CHAT STATE */
+    #empty-chat{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+    #empty-chat.hidden{display:none}
+    .ec-icon{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,var(--red),var(--rdk));display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;box-shadow:0 0 30px rgba(225,29,72,0.2)}
+    .ec-title{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em;margin-bottom:6px}
+    .ec-title span{color:var(--red)}
+    .ec-sub{color:var(--muted);font-size:13px;line-height:1.6;max-width:280px;margin:0 auto 22px}
+    .ec-prompts{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:320px}
+    .ec-prompt{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:11px 12px;cursor:pointer;text-align:left;transition:all 0.15s;font-family:'DM Sans',sans-serif}
+    .ec-prompt:active{background:var(--red-glow);border-color:rgba(225,29,72,0.3)}
+    .ec-prompt-icon{font-size:18px;margin-bottom:5px}
+    .ec-prompt-text{font-size:12px;font-weight:600;color:var(--text);line-height:1.4}
   </style>
 </head>
 <body>
@@ -458,10 +499,7 @@
       <button id="mem-btn" onclick="openMem()"><div id="mem-dot"></div> Memory</button>
     </div>
   </div>
-  <div id="tabs">
-    <div class="tab active" id="tab-chat" onclick="switchTab('chat')">💬 Advisor</div>
-    <div class="tab" id="tab-plan" onclick="switchTab('plan')">📋 My Plan</div>
-  </div>
+
   <div id="body">
     <div id="sb-ov" onclick="closeSB()"></div>
     <div id="sidebar">
@@ -492,6 +530,30 @@
 
 
         <div id="ctx-bar"></div>
+        <!-- EMPTY CHAT STATE -->
+        <div id="empty-chat">
+          <div class="ec-icon">💎</div>
+          <div class="ec-title">Your <span>Advisor</span> is Ready</div>
+          <div class="ec-sub" id="ec-greeting">Ask me anything about growing your business.</div>
+          <div class="ec-prompts">
+            <div class="ec-prompt" onclick="qs2('How do I get more customers fast?')">
+              <div class="ec-prompt-icon">📈</div>
+              <div class="ec-prompt-text">Get more customers</div>
+            </div>
+            <div class="ec-prompt" onclick="qs2('What should I post on social media this week?')">
+              <div class="ec-prompt-icon">💡</div>
+              <div class="ec-prompt-text">Social media ideas</div>
+            </div>
+            <div class="ec-prompt" onclick="qs2('How should I price my services?')">
+              <div class="ec-prompt-icon">💰</div>
+              <div class="ec-prompt-text">Pricing strategy</div>
+            </div>
+            <div class="ec-prompt" onclick="qs2('Help me set up and grow my business')">
+              <div class="ec-prompt-icon">🚀</div>
+              <div class="ec-prompt-text">Business setup</div>
+            </div>
+          </div>
+        </div>
         <div id="messages"></div>
         <div id="typing-row"><div class="micon ai">💎</div><div class="tbubble"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>
         <div id="input-wrap">
@@ -532,7 +594,112 @@
           <div style="padding:0 11px 18px;text-align:center"><button class="genbtn" style="font-size:13px;padding:10px 20px" onclick="openPG()">+ New Plan</button></div>
         </div>
       </div>
+
+      <!-- SETTINGS TAB -->
+      <div id="settings-tab">
+        <!-- Profile card -->
+        <div class="settings-profile-card">
+          <div class="sp-avatar">👤</div>
+          <div>
+            <div class="sp-name" id="sp-name">My Business</div>
+            <div class="sp-goal" id="sp-goal">Goal: —</div>
+            <div class="sp-tier" id="sp-tier">Paid</div>
+          </div>
+        </div>
+
+        <!-- Account -->
+        <div class="settings-section">
+          <div class="settings-section-title">Account</div>
+          <div class="settings-card">
+            <div class="settings-row" onclick="openProfile()">
+              <div class="settings-row-icon" style="background:rgba(225,29,72,0.15)">✏️</div>
+              <div class="settings-row-text">
+                <div class="settings-row-title">Edit Profile</div>
+                <div class="settings-row-sub">Update business type, goal & experience</div>
+              </div>
+              <div class="settings-row-arrow">›</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Memory -->
+        <div class="settings-section">
+          <div class="settings-section-title">Memory</div>
+          <div class="settings-card">
+            <div class="settings-row" onclick="openMem()">
+              <div class="settings-row-icon" style="background:rgba(74,222,128,0.15)">🧠</div>
+              <div class="settings-row-text">
+                <div class="settings-row-title">View Memory</div>
+                <div class="settings-row-sub">See what your advisor remembers about you</div>
+              </div>
+              <div class="settings-row-arrow">›</div>
+            </div>
+            <div class="settings-row" onclick="clearMem()">
+              <div class="settings-row-icon" style="background:rgba(239,68,68,0.15)">🗑</div>
+              <div class="settings-row-text">
+                <div class="settings-row-title">Clear Memory</div>
+                <div class="settings-row-sub">Reset advisor memory and start fresh</div>
+              </div>
+              <div class="settings-row-arrow">›</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data -->
+        <div class="settings-section">
+          <div class="settings-section-title">Data</div>
+          <div class="settings-card">
+            <div class="settings-row" onclick="clearAllChats()">
+              <div class="settings-row-icon" style="background:rgba(251,191,36,0.15)">💬</div>
+              <div class="settings-row-text">
+                <div class="settings-row-title">Clear All Chats</div>
+                <div class="settings-row-sub">Delete all conversation history</div>
+              </div>
+              <div class="settings-row-arrow">›</div>
+            </div>
+            <div class="settings-row" onclick="clearAllPlans()">
+              <div class="settings-row-icon" style="background:rgba(96,165,250,0.15)">📋</div>
+              <div class="settings-row-text">
+                <div class="settings-row-title">Clear All Plans</div>
+                <div class="settings-row-sub">Delete growth plans and action items</div>
+              </div>
+              <div class="settings-row-arrow">›</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sign out -->
+        <div class="settings-section">
+          <div class="settings-card">
+            <div class="settings-row" onclick="doLogout()">
+              <div class="settings-row-icon" style="background:rgba(239,68,68,0.1)">🚪</div>
+              <div class="settings-row-text">
+                <div class="settings-row-title" style="color:#f87171">Sign Out</div>
+                <div class="settings-row-sub">Log out of Ruby Wall Advisor</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align:center;color:var(--sub);font-size:11px;padding:10px 0 20px">Ruby Wall Advisor · Powered by AI</div>
+      </div>
     </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div id="bottom-nav">
+    <button class="bnav-item active" id="bnav-chat" onclick="switchTab('chat')">
+      <span class="bnav-icon">💬</span>
+      <span class="bnav-label">Advisor</span>
+    </button>
+    <button class="bnav-item" id="bnav-plan" onclick="switchTab('plan')">
+      <span class="bnav-icon">📋</span>
+      <span class="bnav-label">My Plan</span>
+    </button>
+    <button class="bnav-item" id="bnav-settings" onclick="switchTab('settings')">
+      <span class="bnav-icon">⚙️</span>
+      <span class="bnav-label">Settings</span>
+    </button>
   </div>
 </div>
 
@@ -773,6 +940,7 @@ function enterAdvisor(){document.getElementById('admin-panel').classList.remove(
 // ADVISOR BOOT
 function startAdvisor(){
   document.getElementById('main').classList.add('show');
+  document.getElementById('bottom-nav').classList.add('show');
 
   const p=LS.get('rw-profile');
   if(p){profile=p;showCtx();renderSB();loadOrNewChat();}
@@ -823,7 +991,7 @@ function newChat(){
   currentMsgs=[];
   document.getElementById('messages').innerHTML='';
   closeSB();
-  sendWelcome();
+  showEmptyChat();
   renderSB();
 }
 function loadOrNewChat(){
@@ -832,9 +1000,15 @@ function loadOrNewChat(){
     const last=chats[0];
     currentChatId=last.id;
     currentMsgs=last.msgs||[];
-    renderMsgs();
+    if(currentMsgs.length>0){
+      hideEmptyChat();
+      renderMsgs();
+    } else {
+      showEmptyChat();
+    }
   } else {
-    newChat();
+    currentChatId='chat-'+Date.now();
+    showEmptyChat();
   }
 }
 function saveCurrentChat(){
@@ -989,6 +1163,7 @@ function renderMsgs(){
   });
 }
 function addMsgEl(role,text){
+  hideEmptyChat();
   const el=document.getElementById('messages');
   const row=document.createElement('div');
   row.className=`mrow ${role==='user'?'user':''}`;
@@ -1063,10 +1238,64 @@ function updateTrial(){
 
 // TABS
 function switchTab(t){
-  document.getElementById('chat-tab').classList.toggle('hidden',t!=='chat');
-  document.getElementById('plan-tab').classList.toggle('active-tab',t==='plan');
-  document.getElementById('tab-chat').classList.toggle('active',t==='chat');
-  document.getElementById('tab-plan').classList.toggle('active',t==='plan');
+  // Chat tab
+  document.getElementById('chat-tab').classList.toggle('hidden', t!=='chat');
+  // Plan tab
+  document.getElementById('plan-tab').classList.toggle('active-tab', t==='plan');
+  // Settings tab
+  document.getElementById('settings-tab').classList.toggle('active-tab', t==='settings');
+  // Bottom nav active states
+  ['chat','plan','settings'].forEach(id => {
+    document.getElementById('bnav-'+id).classList.toggle('active', id===t);
+  });
+  // Update settings profile card
+  if(t==='settings') updateSettingsCard();
+}
+
+function updateSettingsCard(){
+  document.getElementById('sp-name').textContent = profile.biz || 'My Business';
+  document.getElementById('sp-goal').textContent = 'Goal: ' + (profile.goal || '—');
+  document.getElementById('sp-tier').textContent = tier==='trial' ? 'Free Trial' : tier==='admin' ? 'Admin' : 'Paid Client';
+}
+
+function clearAllChats(){
+  if(!confirm('Delete all chat history?')) return;
+  LS.del('rw-chats');
+  currentMsgs=[]; currentChatId=null;
+  document.getElementById('messages').innerHTML='';
+  showEmptyChat();
+  renderSB();
+}
+
+function clearAllPlans(){
+  if(!confirm('Delete all plans and action items?')) return;
+  LS.del('rw-plans'); LS.del('rw-action-items');
+  renderPlanTab(); renderActionItems();
+}
+
+// Empty chat state
+function showEmptyChat(){
+  const ec = document.getElementById('empty-chat');
+  const msgs = document.getElementById('messages');
+  ec.classList.remove('hidden');
+  msgs.style.display='none';
+  // Personalized greeting
+  if(profile.biz){
+    document.getElementById('ec-greeting').textContent = 'Hi! I know your ' + profile.biz + ' business inside out. What do you want to work on today?';
+  }
+}
+
+function hideEmptyChat(){
+  document.getElementById('empty-chat').classList.add('hidden');
+  const msgs = document.getElementById('messages');
+  msgs.style.display='flex';
+  msgs.style.flexDirection='column';
+  msgs.style.gap='10px';
+}
+
+function qs2(text){
+  document.getElementById('msg-input').value = text;
+  sendMsg();
 }
 
 // PLAN GENERATOR
