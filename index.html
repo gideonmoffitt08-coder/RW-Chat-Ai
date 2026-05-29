@@ -279,6 +279,148 @@
     .ec-prompt:active{background:var(--red-glow);border-color:rgba(225,29,72,0.3)}
     .ec-prompt-icon{font-size:18px;margin-bottom:5px}
     .ec-prompt-text{font-size:12px;font-weight:600;color:var(--text);line-height:1.4}
+
+    /* ── WELCOME SCREEN ── */
+    #welcome-screen {
+      position: fixed; inset: 0; z-index: 95;
+      background: var(--bg);
+      display: none; flex-direction: column;
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
+    }
+    #welcome-screen.show { display: flex; }
+
+    .welcome-hero {
+      background: linear-gradient(135deg, #0c0c0f 0%, #1a1020 50%, #0c0c0f 100%);
+      padding: 48px 24px 36px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .welcome-hero::before {
+      content: '';
+      position: absolute;
+      top: -60px; left: 50%; transform: translateX(-50%);
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(225,29,72,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .welcome-logo-wrap {
+      margin-bottom: 20px;
+      position: relative; z-index: 1;
+    }
+    .welcome-greeting {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 13px;
+      color: var(--red); letter-spacing: 0.15em;
+      text-transform: uppercase; margin-bottom: 10px;
+      position: relative; z-index: 1;
+    }
+    .welcome-headline {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 28px;
+      letter-spacing: -0.02em; line-height: 1.2;
+      color: var(--text); margin-bottom: 10px;
+      position: relative; z-index: 1;
+    }
+    .welcome-headline span { color: var(--red); }
+    .welcome-sub {
+      color: var(--muted); font-size: 14px;
+      line-height: 1.6; max-width: 300px;
+      margin: 0 auto; position: relative; z-index: 1;
+    }
+
+    /* Feature grid */
+    .welcome-features {
+      padding: 24px 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 14px;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--red), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .feature-card:active { background: var(--s2); }
+    .feature-card:active::after { opacity: 1; }
+    .fc-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--red), var(--rdk));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; margin-bottom: 10px;
+      box-shadow: 0 4px 12px rgba(225,29,72,0.3);
+    }
+    .fc-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 13px;
+      color: var(--text); margin-bottom: 4px;
+    }
+    .fc-desc {
+      font-size: 11px; color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* Stats bar */
+    .welcome-stats {
+      display: flex; gap: 0;
+      margin: 0 16px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+      flex-shrink: 0;
+    }
+    .ws-item {
+      flex: 1; padding: 14px 10px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+    }
+    .ws-item:last-child { border-right: none; }
+    .ws-num {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 20px;
+      color: var(--red); margin-bottom: 2px;
+    }
+    .ws-label {
+      font-size: 10px; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+
+    /* CTA */
+    .welcome-cta {
+      padding: 0 16px 40px;
+      flex-shrink: 0;
+    }
+    .welcome-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--red), var(--rdk));
+      border: none; border-radius: 14px;
+      padding: 16px 0; color: #fff;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 16px;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(225,29,72,0.4);
+      transition: all 0.2s;
+    }
+    .welcome-btn:active { transform: scale(0.98); opacity: 0.9; }
+    .welcome-hint {
+      text-align: center; color: var(--sub);
+      font-size: 11px; margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -972,7 +1114,7 @@ function startAdvisor(){
   document.getElementById('bottom-nav').classList.add('show');
 
   const p=LS.get('rw-profile');
-  if(p){profile=p;showCtx();renderSB();loadOrNewChat();}
+  if(p){profile=p;showCtx();renderSB();loadOrNewChat();showWelcome();}
   else{document.getElementById('onboarding').classList.remove('hidden')}
 }
 
@@ -984,7 +1126,7 @@ function obNext(){
     const s=document.querySelector('#ob-time .sel');if(!s)return;obData.time=s.dataset.val;
     profile={biz:obData.biz,goal:obData.goal,time:obData.time};
     LS.set('rw-profile',profile);
-    hide('onboarding');showCtx();renderSB();loadOrNewChat();return;
+    hide('onboarding');showCtx();renderSB();loadOrNewChat();showWelcome();return;
   }
   obStep++;
   ['ob0','ob1','ob2'].forEach((id,i)=>document.getElementById(id).style.display=i===obStep?'block':'none');
@@ -1633,6 +1775,34 @@ function closeExtract() {
   extractedItems = [];
 }
 
+
+// ── WELCOME SCREEN ────────────────────────────────────────────────────
+function showWelcome() {
+  const ws = document.getElementById('welcome-screen');
+  ws.classList.add('show');
+  // Personalized greeting
+  const greet = document.getElementById('wc-greeting');
+  if (profile.biz) {
+    greet.textContent = profile.biz;
+  } else {
+    const hour = new Date().getHours();
+    greet.textContent = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+  }
+}
+
+function dismissWelcome() {
+  const ws = document.getElementById('welcome-screen');
+  ws.style.transition = 'opacity 0.3s, transform 0.3s';
+  ws.style.opacity = '0';
+  ws.style.transform = 'translateY(-10px)';
+  setTimeout(() => {
+    ws.classList.remove('show');
+    ws.style.transition = '';
+    ws.style.opacity = '';
+    ws.style.transform = '';
+  }, 300);
+}
+
 // HELPERS
 function hide(id){document.getElementById(id).classList.add('hidden')}
 function show(id){document.getElementById(id).classList.remove('hidden')}
@@ -1675,6 +1845,85 @@ checkSession();
     <div style="color:var(--muted);font-size:12px;margin-bottom:12px">Tell your advisor what you've accomplished. They'll update your recommendations.</div>
     <textarea class="inp" id="log-input" rows="4" placeholder="e.g. I set up my Google Business Profile, posted 3 times on Instagram this week, and got 5 new reviews..." style="margin-bottom:11px"></textarea>
     <button class="btnp" onclick="submitLog()" id="log-submit">Send Update →</button>
+  </div>
+</div>
+
+
+<!-- WELCOME SCREEN -->
+<div id="welcome-screen">
+  <!-- Hero -->
+  <div class="welcome-hero">
+    <div class="welcome-logo-wrap">
+      <svg width="180" height="44" viewBox="0 0 440 108" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="86" font-family="Arial Black,Impact,sans-serif" font-weight="900" font-size="96" fill="#f0f0f0" letter-spacing="-2">NE</text>
+        <g transform="translate(185,2)">
+          <polygon points="0,0 38,0 76,104 38,104" fill="#9f1239" opacity="0.9"/>
+          <polygon points="0,104 38,104 76,0 38,0" fill="#c41230" opacity="0.9"/>
+          <polygon points="16,0 60,0 38,52" fill="#e11d48"/>
+          <polygon points="16,104 60,104 38,52" fill="#e11d48"/>
+        </g>
+        <text x="261" y="86" font-family="Arial Black,Impact,sans-serif" font-weight="900" font-size="96" fill="#f0f0f0" letter-spacing="-2">US</text>
+      </svg>
+    </div>
+    <div class="welcome-greeting" id="wc-greeting">Welcome Back</div>
+    <div class="welcome-headline">Your Business <span>Advisor</span><br>is Ready to Work</div>
+    <div class="welcome-sub">Everything you need to grow your business — in one powerful AI platform.</div>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="welcome-stats">
+    <div class="ws-item">
+      <div class="ws-num">24/7</div>
+      <div class="ws-label">Available</div>
+    </div>
+    <div class="ws-item">
+      <div class="ws-num">6</div>
+      <div class="ws-label">AI Tools</div>
+    </div>
+    <div class="ws-item">
+      <div class="ws-num">∞</div>
+      <div class="ws-label">Advice</div>
+    </div>
+  </div>
+
+  <!-- Feature cards -->
+  <div class="welcome-features">
+    <div class="feature-card">
+      <div class="fc-icon">💬</div>
+      <div class="fc-title">AI Business Advisor</div>
+      <div class="fc-desc">Ask anything about growing, pricing, marketing, or setting up your business.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-icon">🧠</div>
+      <div class="fc-title">Memory</div>
+      <div class="fc-desc">Your advisor remembers past conversations and builds on them every session.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-icon">📋</div>
+      <div class="fc-title">Growth Plans</div>
+      <div class="fc-desc">Generate a personalized 30 or 90-day action plan built for your business.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-icon">⚡</div>
+      <div class="fc-title">Action Items</div>
+      <div class="fc-desc">Extract tasks from any conversation into a checklist you can check off.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-icon">✅</div>
+      <div class="fc-title">Log Progress</div>
+      <div class="fc-desc">Tell your advisor what you've done and get updated recommendations.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-icon">💾</div>
+      <div class="fc-title">Chat History</div>
+      <div class="fc-desc">Every conversation saved. Start new chats while keeping past ones.</div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="welcome-cta">
+    <button class="welcome-btn" onclick="dismissWelcome()">Let's Get to Work →</button>
+    <div class="welcome-hint">Powered by Ruby Wall · AI Business Tools</div>
   </div>
 </div>
 
